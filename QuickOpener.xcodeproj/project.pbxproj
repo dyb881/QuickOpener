@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1758F8402E8927B700F4EE06 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 1758F83F2E8927B700F4EE06 /* KeyboardShortcuts */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		1758F8152E8913CF00F4EE06 /* QuickOpener.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickOpener.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1758F8402E8927B700F4EE06 /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = QuickOpener;
 			packageProductDependencies = (
+				1758F83F2E8927B700F4EE06 /* KeyboardShortcuts */,
 			);
 			productName = QuickOpener;
 			productReference = 1758F8152E8913CF00F4EE06 /* QuickOpener.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 1758F80C2E8913CF00F4EE06;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				1758F83E2E8927B700F4EE06 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1758F8162E8913CF00F4EE06 /* Products */;
 			projectDirPath = "";
@@ -331,6 +340,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1758F83E2E8927B700F4EE06 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1758F83F2E8927B700F4EE06 /* KeyboardShortcuts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1758F83E2E8927B700F4EE06 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
+			productName = KeyboardShortcuts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1758F80D2E8913CF00F4EE06 /* Project object */;
 }

@@ -7,19 +7,12 @@
 
 import AppKit
 import Observation
+import SwiftData
 
 @Observable class Stores {
-    
-    // 项目列表
-    var projects: [ProjectItem] { didSet { CacheData.set(key: "projects", data: projects) } }
+    private let modelContext: ModelContext
 
-    // 应用列表
-    var applications: [ApplicationItem] { didSet { CacheData.set(key: "applications", data: applications) } }
-
-    // 当前选中应用
-    var currentApplication: ApplicationItem { didSet { CacheData.set(key: "currentApplication", data: currentApplication) } }
-
-    // 过滤文本
-    var filterText: String = ""
-    
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
 }
