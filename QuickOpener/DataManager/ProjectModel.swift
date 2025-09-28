@@ -13,9 +13,12 @@ import SwiftData
 /// 继承自 `FileCommonData`，包含与文件路径相关的通用属性，并通过
 /// SwiftData 的 `@Model` 注解支持持久化。
 @Model
-final class ProjectModel: FileCommonData {
+final class ProjectModel: FileCommonDataProtocol {
     /// 唯一标识符。用于 SwiftData 的唯一约束。
     @Attribute(.unique) var id: UUID
+
+    // 将 path 持久化，以便可查询
+    @Attribute var path: String
 
     /// 与该项目关联的应用程序（用于打开该文件）。
     /// 可以被更新以更换打开程序。
@@ -31,9 +34,9 @@ final class ProjectModel: FileCommonData {
     ///   - application: 默认用于打开该文件的 `ApplicationModel` 实例。
     init(path: String, application: ApplicationModel) {
         id = UUID()
+        self.path = path
         self.application = application
         weight = 0
-        super.init(path: path)
     }
 
     /// 使用指定的（或当前的）应用程序打开此项目文件，并将权重计数加一。

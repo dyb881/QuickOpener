@@ -7,6 +7,7 @@
 
 import AppKit
 import KeyboardShortcuts
+import SwiftData
 import SwiftUI
 
 // 定义快捷键名称
@@ -19,13 +20,9 @@ extension KeyboardShortcuts.Name {
 struct QuickOpenerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            ApplicationModel.self,
-            ProjectModel.self,
-        ])
+    static let sharedModelContainer: ModelContainer = {
+        let schema = Schema([ApplicationModel.self, ProjectModel.self])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
@@ -33,11 +30,14 @@ struct QuickOpenerApp: App {
         }
     }()
 
+    static let dataManager = DataManager(modelContext: sharedModelContainer.mainContext)
+
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        Settings {
+            SettingsView()
+                .modelContainer(QuickOpenerApp.sharedModelContainer)
+                .environmentObject(QuickOpenerApp.dataManager)
         }
-        .modelContainer(sharedModelContainer)
     }
 }
 
@@ -120,7 +120,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
-        let hostingController = NSHostingController(rootView: ContentView())
+        let hostingController = NSHostingController(rootView:
+            ContentView()
+                .modelContainer(QuickOpenerApp.sharedModelContainer)
+                .environmentObject(QuickOpenerApp.dataManager)
+        )
         newWindow.contentViewController = hostingController
         newWindow.collectionBehavior = [.managed, .moveToActiveSpace]
         newWindow.delegate = self
