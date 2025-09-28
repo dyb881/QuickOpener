@@ -5,14 +5,15 @@
 //  Created by 邓耀彬 on 2025/9/28.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct QuickOpenerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            ApplicationModel.self,
+            ProjectModel.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
