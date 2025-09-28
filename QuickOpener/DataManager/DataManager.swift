@@ -1,5 +1,5 @@
 //
-//  Stores.swift
+//  DataManager.swift
 //  QuickOpener
 //
 //  Created by 邓耀彬 on 2025/9/28.
@@ -13,11 +13,11 @@ import SwiftData
 ///
 /// 该类封装对 `ModelContext` 的基础操作（查询、插入、删除和保存），
 /// 使上层 UI 或业务逻辑可以更方便地对 `ProjectModel` / `ApplicationModel` 进行读写。
-@Observable class Stores {
+@Observable class DataManager {
     /// 注入的 SwiftData 上下文，用于执行查询/保存等操作。
     private let modelContext: ModelContext
 
-    /// 使用指定的 `ModelContext` 初始化 Stores。
+    /// 使用指定的 `ModelContext` 初始化 DataManager。
     /// - Parameter modelContext: 用于持久化操作的上下文。
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
