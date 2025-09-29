@@ -43,7 +43,7 @@ final class ProjectModel: FileCommonDataProtocol {
     /// - Parameter newApplication: 可选的新 `ApplicationModel`，如果提供则替换当前的 `application`。
     ///
     /// 该方法会调用 `NSWorkspace.shared.open(_:withApplicationAt:configuration:)` 来启动对应的应用打开文件。
-    func open(with newApplication: ApplicationModel? = nil) {
+    func open(_ newApplication: ApplicationModel? = nil) {
         if let app = newApplication {
             application = app
         }

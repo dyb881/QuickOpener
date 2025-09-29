@@ -16,6 +16,15 @@ class DataManager: ObservableObject {
     @Published var currentApplication: ApplicationModel
     @Published var filterText: String = ""
 
+    // 渲染列表数据
+    var renderProjects: [ProjectModel] {
+        var filteredProjects = projects
+        if !filterText.isEmpty {
+            filteredProjects = filteredProjects.filter { $0.name.lowercased().contains(filterText.lowercased()) || $0.path.lowercased().contains(filterText.lowercased()) }
+        }
+        return filteredProjects.sorted { $0.weight > $1.weight }
+    }
+
     private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {
@@ -27,6 +36,9 @@ class DataManager: ObservableObject {
             projects = []
             applications = []
         }
+        if application.isEmpty {
+            applications = [ApplicationModel.defaultApplication]
+        }
         if let path = UserDefaults.standard.string(forKey: "currentApplicationPath"), !path.isEmpty {
             currentApplication = ApplicationModel(path: path)
         } else {
@@ -34,31 +46,31 @@ class DataManager: ObservableObject {
         }
     }
 
+    // 清空所有缓存
+    func clearCache() {
+        
+    }
+
     // 添加应用
     func addApplication() {
         print("DataManager: addApplication")
         let panel = NSOpenPanel()
-        // 默认打开系统的 应用程序 文件夹（本地域），如果不可用回退到 /Applications
-        if let appsURL = FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first {
-            panel.directoryURL = appsURL
-        } else {
-            panel.directoryURL = URL(fileURLWithPath: "/Applications", isDirectory: true)
-        }
+        panel.directoryURL = FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first ?? URL(fileURLWithPath: "/Applications")
         panel.allowedContentTypes = [.application]
         panel.allowsMultipleSelection = false
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
 
-        guard panel.runModal() == .OK, let url = panel.url, !url.path.isEmpty else { return }
+        guard panel.runModal() == .OK, let url = panel.url else { return }
 
         let appPath = url.path
         if let existingApp = applications.first(where: { $0.path == appPath }) {
             selectApplication(existingApp)
         } else {
             let newApp = ApplicationModel(path: appPath)
-            applications.append(newApp)
             modelContext.insert(newApp)
             try? modelContext.save()
+            applications.append(newApp)
             selectApplication(newApp)
         }
     }
@@ -68,5 +80,34 @@ class DataManager: ObservableObject {
         print("DataManager: selectApplication -> \(app.path)")
         currentApplication = app
         UserDefaults.standard.set(currentApplication.path, forKey: "currentApplicationPath")
+    }
+
+    // 添加项目
+    func addProjects() {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = true
+
+        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
+
+        let existingPaths = Set(projects.map { $0.path })
+
+        let newProjects = panel.urls
+            .filter { !existingPaths.contains($0.path) }
+            .map { ProjectModel(path: $0.path, application: currentApplication) }
+
+        guard !newProjects.isEmpty else { return }
+
+        newProjects.forEach { modelContext.insert($0) }
+        try? modelContext.save()
+        projects.append(contentsOf: newProjects)
+    }
+
+    // 山吹项目
+    func removeProjects(_ project: ProjectModel) {
+        modelContext.delete(project)
+        try? modelContext.save()
+        projects = projects.filter { $0 != project }
     }
 }

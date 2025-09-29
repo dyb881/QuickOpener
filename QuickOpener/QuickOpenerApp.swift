@@ -79,6 +79,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // 重置缓存
     @objc func resetCache() {
+        QuickOpenerApp.dataManager.clearCache()
         showWindow()
     }
 
