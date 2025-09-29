@@ -44,6 +44,11 @@ final class ProjectModel: FileCommonDataProtocol {
     ///
     /// 该方法会调用 `NSWorkspace.shared.open(_:withApplicationAt:configuration:)` 来启动对应的应用打开文件。
     func open(_ newApplication: ApplicationModel? = nil) {
+        if !exists {
+            QuickOpenerApp.dataManager.removeProjects(self)
+            return
+        }
+
         if let app = newApplication {
             application = app
         }

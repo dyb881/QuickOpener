@@ -81,6 +81,14 @@ class DataManager: ObservableObject {
         }
     }
 
+    // 删除应用
+    func removeApplication(_ app: ApplicationModel) {
+        print("DataManager: removeApplication")
+        modelContext.delete(app)
+        try? modelContext.save()
+        applications = applications.filter { $0 != app }
+    }
+
     // 选择应用
     func selectApplication(_ app: ApplicationModel) {
         print("DataManager: selectApplication -> \(app.path)")
@@ -115,7 +123,7 @@ class DataManager: ObservableObject {
         projects.append(contentsOf: newProjects)
     }
 
-    // 山吹项目
+    // 删除项目
     func removeProjects(_ project: ProjectModel) {
         print("DataManager: removeProjects")
         modelContext.delete(project)
