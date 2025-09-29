@@ -1,6 +1,6 @@
 "filter_projects" = "过滤项目";
 "menu_current_application" = "启动应用";
-"menu_available_applications" = "可用应用";
+"menu_available_applications" = "应用";
 "menu_actions" = "操作";
 "add_application" = "添加应用";
 "default_launch" = "设为默认";
@@ -29,4 +29,4 @@
 "french" = "法语";
 "spanish" = "西班牙语";
 
-"restart_takes_effect" = "重启后生效";
+"restart_takes_effect" = "需要重启";

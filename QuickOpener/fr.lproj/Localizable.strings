@@ -1,9 +1,9 @@
 "filter_projects" = "Filtrer les projets";
 "menu_current_application" = "Lancer l'application";
-"menu_available_applications" = "Applications disponibles";
+"menu_available_applications" = "Apps";
 "menu_actions" = "Actions";
-"add_application" = "Ajouter une application";
-"default_launch" = "Lancement par défaut";
+"add_application" = "Ajouter app";
+"default_launch" = "Par défaut";
 "delete_project" = "Supprimer le projet";
 
 "settings_shortcuts" = "Paramètres des raccourcis";
@@ -29,4 +29,4 @@
 "french" = "Français";
 "spanish" = "Espagnol";
 
-"restart_takes_effect" = "Redémarrage nécessaire";
+"restart_takes_effect" = "Redémarrer";

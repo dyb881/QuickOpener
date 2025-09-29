@@ -1,9 +1,9 @@
 "filter_projects" = "Filter Projects";
 "menu_current_application" = "Launch Application";
-"menu_available_applications" = "Available Applications";
+"menu_available_applications" = "Apps";
 "menu_actions" = "Actions";
 "add_application" = "Add Application";
-"default_launch" = "Set as Default";
+"default_launch" = "Set Default";
 "delete_project" = "Delete Project";
 
 "settings_shortcuts" = "Shortcuts";
@@ -29,4 +29,4 @@
 "french" = "French";
 "spanish" = "Spanish";
 
-"restart_takes_effect" = "Restart to take effect";
+"restart_takes_effect" = "Restart Required";

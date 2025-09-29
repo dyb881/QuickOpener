@@ -1,9 +1,9 @@
 "filter_projects" = "프로젝트 필터";
 "menu_current_application" = "애플리케이션 실행";
-"menu_available_applications" = "사용 가능한 애플리케이션";
+"menu_available_applications" = "앱";
 "menu_actions" = "작업";
-"add_application" = "애플리케이션 추가";
-"default_launch" = "기본 실행";
+"add_application" = "앱 추가";
+"default_launch" = "기본값";
 "delete_project" = "프로젝트 삭제";
 
 "settings_shortcuts" = "단축키 설정";
@@ -29,4 +29,4 @@
 "french" = "프랑스어";
 "spanish" = "스페인어";
 
-"restart_takes_effect" = "재시작 후 적용";
+"restart_takes_effect" = "재시작 필요";
