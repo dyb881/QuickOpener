@@ -55,10 +55,12 @@ struct ContentView: View {
                 // 无需执行，显示默认应用
             }
 
-            Text(LocalizedStringKey("menu_available_applications")) // 列出其他可用应用程序
-            ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.id) { app in
-                appButton(app) {
-                    dataManager.selectApplication(app) // 选择其他应用程序
+            if dataManager.applications.count >= 2 {
+                Text(LocalizedStringKey("menu_available_applications")) // 列出其他可用应用程序
+                ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.id) { app in
+                    appButton(app) {
+                        dataManager.selectApplication(app) // 选择其他应用程序
+                    }
                 }
             }
 
@@ -89,10 +91,13 @@ struct ContentView: View {
                 appButton(item.application) {
                     item.open() // 使用默认应用程序打开项目
                 }
-                Text(LocalizedStringKey("menu_available_applications")) // 其他可用应用程序
-                ForEach(dataManager.applications.filter { $0.path != item.application.path }, id: \.self) { app in
-                    appButton(app) {
-                        item.open(app) // 使用指定应用程序打开项目
+
+                if dataManager.applications.count >= 2 {
+                    Text(LocalizedStringKey("menu_available_applications")) // 其他可用应用程序
+                    ForEach(dataManager.applications.filter { $0.path != item.application.path }, id: \.self) { app in
+                        appButton(app) {
+                            item.open(app) // 使用指定应用程序打开项目
+                        }
                     }
                 }
             } label: {

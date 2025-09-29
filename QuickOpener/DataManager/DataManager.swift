@@ -54,6 +54,8 @@ class DataManager: ObservableObject {
         } catch {
             projects = []
             applications = [ApplicationModel.defaultApplication]
+            modelContext.insert(ApplicationModel.defaultApplication)
+            try? modelContext.save()
         }
         if let path = UserDefaults.standard.string(forKey: "currentApplicationPath"), !path.isEmpty {
             currentApplication = ApplicationModel(path: path)
