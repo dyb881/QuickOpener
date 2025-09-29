@@ -35,7 +35,7 @@ struct SettingsView: View {
                         UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
                     }
                     Button(LocalizedStringKey("restart_takes_effect")) {
-                        // 重启生效
+                        restartApp()
                     }
                 }
             }.padding(.vertical, 5)
@@ -57,6 +57,16 @@ struct SettingsView: View {
             }.padding(.vertical, 5)
         }
         .padding()
+    }
+
+    private func restartApp() {
+        let task = Process()
+        task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        task.arguments = ["-n", Bundle.main.bundlePath]
+        try? task.run()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NSApp.terminate(nil)
+        }
     }
 }
 
