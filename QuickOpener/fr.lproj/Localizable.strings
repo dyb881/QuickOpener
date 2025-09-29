@@ -1,0 +1,31 @@
+"filter_projects" = "Filtrer les projets";
+"menu_current_application" = "Lancer l'application";
+"menu_available_applications" = "Applications disponibles";
+"menu_actions" = "Actions";
+"add_application" = "Ajouter une application";
+"default_launch" = "Lancement par défaut";
+"delete_project" = "Supprimer le projet";
+
+"settings_shortcuts" = "Raccourcis clavier";
+"label_shortcut" = "Raccourci :";
+"button_reset_shortcut" = "Réinitialiser le raccourci";
+"settings_about" = "À propos";
+"app_description_short" = "Lancement rapide et gestion de vos projets";
+"app_description_long" = "Utilisez le raccourci global (Option+Z par défaut) pour ouvrir à tout moment la fenêtre de sélection de projet et améliorer votre efficacité.";
+
+"menu_show_window" = "Afficher la fenêtre";
+"menu_reset_cache" = "Réinitialiser le cache";
+"menu_quit" = "Quitter";
+
+"settings_language" = "Langue";
+"label_language" = "Choisir la langue";
+"system_default" = "Système par défaut";
+"english" = "Anglais";
+"chinese_simplified" = "Chinois simplifié";
+"chinese_traditional" = "Chinois traditionnel";
+"japanese" = "Japonais";
+"korean" = "Coréen";
+"german" = "Allemand";
+"french" = "Français";
+
+"restart_takes_effect" = "Redémarrage nécessaire";

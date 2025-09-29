@@ -18,6 +18,12 @@ struct SettingsView: View {
         ("system_default", ""),
         ("english", "en"),
         ("chinese_simplified", "zh-Hans"),
+        ("chinese_traditional", "zh-Hant"),
+        ("japanese", "ja"),
+        ("korean", "ko"),
+        ("german", "de"),
+        ("french", "fr"),
+        ("spanish", "es"),
     ]
 
     var body: some View {

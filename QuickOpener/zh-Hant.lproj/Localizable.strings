@@ -1,0 +1,27 @@
+"filter_projects" = "過濾專案";
+"menu_current_application" = "啟動應用";
+"menu_available_applications" = "可用應用";
+"menu_actions" = "操作";
+"add_application" = "新增應用";
+"default_launch" = "設為預設";
+"delete_project" = "刪除專案";
+
+"settings_shortcuts" = "快捷鍵設定";
+"label_shortcut" = "快捷鍵：";
+"button_reset_shortcut" = "重置快捷鍵";
+"settings_about" = "關於";
+"app_description_short" = "快速啟動和管理您的專案";
+"app_description_long" = "使用全域快捷鍵（預設 Option+Z）隨時開啟專案選擇視窗，提升工作效率。";
+
+"menu_show_window" = "顯示視窗";
+"menu_reset_cache" = "重置快取";
+"menu_quit" = "退出";
+
+"settings_language" = "語言";
+"label_language" = "選擇語言";
+"system_default" = "系統預設";
+"english" = "英語";
+"chinese_simplified" = "簡體中文";
+"chinese_traditional" = "繁體中文";
+
+"restart_takes_effect" = "重啟生效";

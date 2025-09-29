@@ -3,15 +3,15 @@
 "menu_available_applications" = "可用应用";
 "menu_actions" = "操作";
 "add_application" = "添加应用";
-"default_launch" = "默认启动";
+"default_launch" = "设为默认";
 "delete_project" = "删除项目";
 
 "settings_shortcuts" = "快捷键设置";
 "label_shortcut" = "快捷键：";
 "button_reset_shortcut" = "重置快捷键";
-"settings_about" = "应用说明";
+"settings_about" = "关于";
 "app_description_short" = "快速启动和管理您的项目";
-"app_description_long" = "使用全局快捷键 (默认 Option+Z) 随时打开项目选择窗口，提升工作效率。";
+"app_description_long" = "使用全局快捷键（默认 Option+Z）随时打开项目选择窗口，提升工作效率。";
 
 "menu_show_window" = "显示窗口";
 "menu_reset_cache" = "重置缓存";
@@ -22,5 +22,11 @@
 "system_default" = "系统默认";
 "english" = "英语";
 "chinese_simplified" = "简体中文";
+"chinese_traditional" = "繁体中文";
+"japanese" = "日语";
+"korean" = "韩语";
+"german" = "德语";
+"french" = "法语";
+"spanish" = "西班牙语";
 
-"restart_takes_effect" = "重启生效";
+"restart_takes_effect" = "重启后生效";

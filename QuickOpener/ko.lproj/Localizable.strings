@@ -1,0 +1,34 @@
+"filt"default_launch" = "기본값으로 설정";
+"delete_project" = "프로젝트 삭제";
+
+"settings_shortcuts" = "단축키 설정";
+"label_shortcut" = "단축키:";
+"button_reset_shortcut" = "단축키 초기화";jects" = "프로젝트 필터";
+"menu_current_application" = "애플리케이션 실행";
+"menu_available_applications" = "사용 가능한 애플리케이션";
+"menu_actions" = "작업";
+"add_application" = "애플리케이션 추가";
+"default_launch" = "기본 실행";
+"delete_project" = "프로젝트 삭제";
+
+"settings_shortcuts" = "단축키 설정";
+"label_shortcut" = "단축키:";
+"button_reset_shortcut" = "단축키 초기화";
+"settings_about" = "정보";
+"app_description_short" = "프로젝트 빠른 실행 및 관리";
+"app_description_long" = "전역 단축키(기본 Option+Z)를 사용하여 언제든지 프로젝트 선택 창을 열어 작업 효율성을 높입니다.";
+
+"menu_show_window" = "창 표시";
+"menu_reset_cache" = "캐시 초기화";
+"menu_quit" = "종료";
+
+"settings_language" = "언어";
+"label_language" = "언어 선택";
+"system_default" = "시스템 기본값";
+"english" = "영어";
+"chinese_simplified" = "중국어 간체";
+"chinese_traditional" = "중국어 번체";
+"japanese" = "일본어";
+"korean" = "한국어";
+
+"restart_takes_effect" = "재시작 후 적용";

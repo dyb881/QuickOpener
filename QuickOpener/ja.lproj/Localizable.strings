@@ -1,0 +1,28 @@
+"filter_projects" = "プロジェクトのフィルター";
+"menu_current_application" = "アプリケーションを起動";
+"menu_available_applications" = "利用可能なアプリケーション";
+"menu_actions" = "アクション";
+"add_application" = "アプリケーションを追加";
+"default_launch" = "デフォルトで起動";
+"delete_project" = "プロジェクトを削除";
+
+"settings_shortcuts" = "ショートカット設定";
+"label_shortcut" = "ショートカット：";
+"button_reset_shortcut" = "ショートカットをリセット";
+"settings_about" = "このアプリについて";
+"app_description_short" = "プロジェクトのクイック起動と管理";
+"app_description_long" = "グローバルショートカット（デフォルト Option+Z）を使用して、いつでもプロジェクト選択ウィンドウを開き、作業効率を向上させます。";
+
+"menu_show_window" = "ウィンドウを表示";
+"menu_reset_cache" = "キャッシュをリセット";
+"menu_quit" = "終了";
+
+"settings_language" = "言語";
+"label_language" = "言語を選択";
+"system_default" = "システムデフォルト";
+"english" = "英語";
+"chinese_simplified" = "簡体字中国語";
+"chinese_traditional" = "繁体字中国語";
+"japanese" = "日本語";
+
+"restart_takes_effect" = "再起動後に反映";

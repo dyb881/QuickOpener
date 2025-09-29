@@ -1,20 +1,20 @@
-"filter_projects" = "Filter";
-"menu_current_application" = "Current";
-"menu_available_applications" = "Available";
+"filter_projects" = "Filter Projects";
+"menu_current_application" = "Launch Application";
+"menu_available_applications" = "Available Applications";
 "menu_actions" = "Actions";
-"add_application" = "Add application";
-"default_launch" = "Default";
-"delete_project" = "Delete";
+"add_application" = "Add Application";
+"default_launch" = "Set as Default";
+"delete_project" = "Delete Project";
 
 "settings_shortcuts" = "Shortcuts";
 "label_shortcut" = "Shortcut:";
-"button_reset_shortcut" = "Reset shortcut";
+"button_reset_shortcut" = "Reset Shortcut";
 "settings_about" = "About";
 "app_description_short" = "Quickly launch and manage your projects";
 "app_description_long" = "Use the global shortcut (default Option+Z) to open the project selector anytime and boost your productivity.";
 
-"menu_show_window" = "Show window";
-"menu_reset_cache" = "Reset cache";
+"menu_show_window" = "Show Window";
+"menu_reset_cache" = "Reset Cache";
 "menu_quit" = "Quit";
 
 "settings_language" = "Language";
@@ -22,5 +22,11 @@
 "system_default" = "System Default";
 "english" = "English";
 "chinese_simplified" = "Simplified Chinese";
+"chinese_traditional" = "Traditional Chinese";
+"japanese" = "Japanese";
+"korean" = "Korean";
+"german" = "German";
+"french" = "French";
+"spanish" = "Spanish";
 
-"restart_takes_effect" = "Restart takes effect";
+"restart_takes_effect" = "Restart to take effect";
