@@ -11,19 +11,19 @@ import SwiftUI
 struct SettingsView: View {
     var body: some View {
         Form {
-            Section(header: Text("快捷键设置").font(.headline)) {
+            Section(header: Text(LocalizedStringKey("settings_shortcuts")).font(.headline)) {
                 HStack {
-                    Text("快捷键：")
+                    Text(LocalizedStringKey("label_shortcut"))
                     KeyboardShortcuts.Recorder(for: .toggleProjectOpener)
-                    Button("重置快捷键") {
+                    Button(LocalizedStringKey("button_reset_shortcut")) {
                         KeyboardShortcuts.reset(.toggleProjectOpener)
                     }
                 }
             }.padding(.vertical, 5)
-            Section(header: Text("应用说明").font(.headline)) {
-                Text("快速启动和管理您的项目")
+            Section(header: Text(LocalizedStringKey("settings_about")).font(.headline)) {
+                Text(LocalizedStringKey("app_description_short"))
                     .foregroundColor(.secondary)
-                Text("使用全局快捷键 (默认 Option+Z) 随时打开项目选择窗口，提升工作效率。")
+                Text(LocalizedStringKey("app_description_long"))
                     .foregroundColor(.secondary)
             }.padding(.vertical, 5)
         }

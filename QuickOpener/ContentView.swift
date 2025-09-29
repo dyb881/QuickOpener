@@ -29,7 +29,7 @@ struct ContentView: View {
     /// 头部控件，包含过滤文本输入框和添加项目按钮。
     private var headerControls: some View {
         HStack {
-            TextField("过滤项目", text: $dataManager.filterText) // 输入框，用于过滤项目列表
+            TextField(LocalizedStringKey("filter_projects"), text: $dataManager.filterText) // 输入框，用于过滤项目列表
             addProjectButton // 添加项目和应用程序的菜单按钮
         }
     }
@@ -50,24 +50,24 @@ struct ContentView: View {
     /// 添加项目和应用程序的菜单按钮，主操作触发添加项目，菜单提供应用程序选择和添加功能。
     private var addProjectButton: some View {
         Menu {
-            Text("启动应用") // 显示当前应用程序
+            Text(LocalizedStringKey("menu_current_application")) // 显示当前应用程序
             appButton(dataManager.currentApplication) {
                 // 无需执行，显示默认应用
             }
 
-            Text("可用应用") // 列出其他可用应用程序
+            Text(LocalizedStringKey("menu_available_applications")) // 列出其他可用应用程序
             ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.id) { app in
                 appButton(app) {
                     dataManager.selectApplication(app) // 选择其他应用程序
                 }
             }
 
-            Text("操作") // 其他操作选项
+            Text(LocalizedStringKey("menu_actions")) // 其他操作选项
             Button(action: {
                 dataManager.addApplication() // 打开面板添加新应用程序
             }) {
                 Image(nsImage: NSWorkspace.shared.icon(forFile: "/System/Applications/App Store.app"))
-                Text("添加应用")
+                Text(LocalizedStringKey("add_application"))
             }
             .onHover(perform: updateCursor)
         } label: {
@@ -85,22 +85,22 @@ struct ContentView: View {
     private func projectSetting(_ item: ProjectModel) -> some View {
         ZStack {
             Menu {
-                Text("默认启动") // 默认应用程序打开选项
+                Text(LocalizedStringKey("default_launch")) // 默认应用程序打开选项
                 appButton(item.application) {
                     item.open() // 使用默认应用程序打开项目
                 }
-                Text("可用应用") // 其他可用应用程序
+                Text(LocalizedStringKey("menu_available_applications")) // 其他可用应用程序
                 ForEach(dataManager.applications.filter { $0.path != item.application.path }, id: \.self) { app in
                     appButton(app) {
                         item.open(app) // 使用指定应用程序打开项目
                     }
                 }
-                Text("操作") // 其他操作选项
+                Text(LocalizedStringKey("menu_actions")) // 其他操作选项
                 Button(action: {
                     dataManager.removeProjects(item) // 删除项目
                 }) {
                     Image(systemName: "trash")
-                    Text("删除项目")
+                    Text(LocalizedStringKey("delete_project"))
                 }
                 .onHover(perform: updateCursor)
             } label: {

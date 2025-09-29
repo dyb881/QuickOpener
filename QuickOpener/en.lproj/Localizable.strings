@@ -1,0 +1,18 @@
+"filter_projects" = "Filter projects";
+"menu_current_application" = "Current application";
+"menu_available_applications" = "Available applications";
+"menu_actions" = "Actions";
+"add_application" = "Add application";
+"default_launch" = "Default launch";
+"delete_project" = "Delete project";
+
+"settings_shortcuts" = "Shortcuts";
+"label_shortcut" = "Shortcut:";
+"button_reset_shortcut" = "Reset shortcut";
+"settings_about" = "About";
+"app_description_short" = "Quickly launch and manage your projects";
+"app_description_long" = "Use the global shortcut (default Option+Z) to open the project selector anytime and boost your productivity.";
+
+"menu_show_window" = "Show window";
+"menu_reset_cache" = "Reset cache";
+"menu_quit" = "Quit";
