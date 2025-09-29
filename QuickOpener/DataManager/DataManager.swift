@@ -13,15 +13,13 @@ internal import UniformTypeIdentifiers
 class DataManager: ObservableObject {
     @Published var projects: [ProjectModel]
     @Published var applications: [ApplicationModel]
-    @Published var currentApplication: ApplicationModel { didSet {
-        print("DataManager: currentApplication")
-        UserDefaults.standard.set(currentApplication.path, forKey: "currentApplicationPath")
-        // 有时 macOS 的 Menu/SwiftUI 视图不会在模型变更后立即重新渲染。
-        // 这里显式触发 objectWillChange，以确保所有依赖于 currentApplication 的视图刷新。
-        DispatchQueue.main.async { [weak self] in
-            self?.objectWillChange.send()
+    @Published var currentApplication: ApplicationModel {
+        didSet {
+            print("DataManager: currentApplication")
+            UserDefaults.standard.set(currentApplication.path, forKey: "currentApplicationPath")
         }
-    }}
+    }
+
     @Published var filterText: String = ""
 
     private let modelContext: ModelContext
@@ -29,18 +27,18 @@ class DataManager: ObservableObject {
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
         do {
-            self.projects = try modelContext.fetch(FetchDescriptor<ProjectModel>())
-            self.applications = try modelContext.fetch(FetchDescriptor<ApplicationModel>())
+            projects = try modelContext.fetch(FetchDescriptor<ProjectModel>())
+            applications = try modelContext.fetch(FetchDescriptor<ApplicationModel>())
         } catch {
-            self.projects = []
-            self.applications = []
+            projects = []
+            applications = []
         }
 
         // 读取时以 String 形式取出（写入时也是 String），避免类型不匹配
         if let path = UserDefaults.standard.string(forKey: "currentApplicationPath"), !path.isEmpty {
-            self.currentApplication = ApplicationModel(path: path)
+            currentApplication = ApplicationModel(path: path)
         } else {
-            self.currentApplication = ApplicationModel.defaultApplication
+            currentApplication = ApplicationModel.defaultApplication
         }
     }
 
