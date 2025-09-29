@@ -1,10 +1,10 @@
-"filter_projects" = "Filter projects";
-"menu_current_application" = "Current application";
-"menu_available_applications" = "Available applications";
+"filter_projects" = "Filter";
+"menu_current_application" = "Current";
+"menu_available_applications" = "Available";
 "menu_actions" = "Actions";
 "add_application" = "Add application";
-"default_launch" = "Default launch";
-"delete_project" = "Delete project";
+"default_launch" = "Default";
+"delete_project" = "Delete";
 
 "settings_shortcuts" = "Shortcuts";
 "label_shortcut" = "Shortcut:";
@@ -16,3 +16,11 @@
 "menu_show_window" = "Show window";
 "menu_reset_cache" = "Reset cache";
 "menu_quit" = "Quit";
+
+"settings_language" = "Language";
+"label_language" = "Select Language";
+"system_default" = "System Default";
+"english" = "English";
+"chinese_simplified" = "Simplified Chinese";
+
+"restart_takes_effect" = "Restart takes effect";
