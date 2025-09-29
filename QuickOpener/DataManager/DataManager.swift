@@ -34,9 +34,6 @@ class DataManager: ObservableObject {
             applications = try modelContext.fetch(FetchDescriptor<ApplicationModel>())
         } catch {
             projects = []
-            applications = []
-        }
-        if application.isEmpty {
             applications = [ApplicationModel.defaultApplication]
         }
         if let path = UserDefaults.standard.string(forKey: "currentApplicationPath"), !path.isEmpty {
@@ -48,7 +45,15 @@ class DataManager: ObservableObject {
 
     // 清空所有缓存
     func clearCache() {
-        
+        try? modelContext.delete(model: ProjectModel.self)
+        try? modelContext.delete(model: ApplicationModel.self)
+        try? modelContext.save()
+
+        UserDefaults.standard.removeObject(forKey: "currentApplicationPath")
+
+        projects = []
+        applications = [ApplicationModel.defaultApplication]
+        currentApplication = ApplicationModel.defaultApplication
     }
 
     // 添加应用
