@@ -11,6 +11,7 @@ import SwiftData
 internal import UniformTypeIdentifiers
 
 /// 数据管理类，负责管理项目和应用程序的数据，处理数据持久化、选择和过滤逻辑。
+@MainActor
 class DataManager: ObservableObject {
     /// 项目列表，存储所有 `ProjectModel` 实例，发布更改以触发 UI 更新。
     @Published var projects: [ProjectModel]
