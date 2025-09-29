@@ -85,7 +85,7 @@ struct ContentView: View {
     private func projectSetting(_ item: ProjectModel) -> some View {
         ZStack {
             Menu {
-                Text(LocalizedStringKey("default_launch")) // 默认应用程序打开选项
+                Text(LocalizedStringKey("menu_current_application")) // 默认应用程序打开选项
                 appButton(item.application) {
                     item.open() // 使用默认应用程序打开项目
                 }
@@ -95,14 +95,6 @@ struct ContentView: View {
                         item.open(app) // 使用指定应用程序打开项目
                     }
                 }
-                Text(LocalizedStringKey("menu_actions")) // 其他操作选项
-                Button(action: {
-                    dataManager.removeProjects(item) // 删除项目
-                }) {
-                    Image(systemName: "trash")
-                    Text(LocalizedStringKey("delete_project"))
-                }
-                .onHover(perform: updateCursor)
             } label: {
                 Image(nsImage: item.application.icon) // 应用程序图标作为菜单触发器
             }
@@ -124,6 +116,10 @@ struct ContentView: View {
                 projectSetting(item) // 项目设置菜单
                 Text(item.name) // 项目名称
                 Spacer()
+                Image(systemName: "trash")
+                    .onTapGesture {
+                        dataManager.removeProjects(item) // 删除项目
+                    }
             }
             .contentShape(Rectangle()) // 确保整行可点击
             .onHover { hovering in

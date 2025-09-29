@@ -3,8 +3,6 @@
 "menu_available_applications" = "앱";
 "menu_actions" = "작업";
 "add_application" = "앱 추가";
-"default_launch" = "기본값";
-"delete_project" = "프로젝트 삭제";
 
 "settings_shortcuts" = "단축키 설정";
 "label_shortcut" = "단축키:";

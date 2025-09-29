@@ -3,8 +3,6 @@
 "menu_available_applications" = "应用";
 "menu_actions" = "操作";
 "add_application" = "添加应用";
-"default_launch" = "设为默认";
-"delete_project" = "删除项目";
 
 "settings_shortcuts" = "快捷键设置";
 "label_shortcut" = "快捷键：";

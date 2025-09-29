@@ -3,8 +3,6 @@
 "menu_available_applications" = "アプリ";
 "menu_actions" = "アクション";
 "add_application" = "アプリを追加";
-"default_launch" = "デフォルト";
-"delete_project" = "プロジェクトを削除";
 
 "settings_shortcuts" = "ショートカット設定";
 "label_shortcut" = "ショートカット：";

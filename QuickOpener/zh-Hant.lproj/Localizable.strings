@@ -3,8 +3,6 @@
 "menu_available_applications" = "可用應用";
 "menu_actions" = "操作";
 "add_application" = "新增應用";
-"default_launch" = "預設啟動";
-"delete_project" = "刪除專案";
 
 "settings_shortcuts" = "快捷鍵設定";
 "label_shortcut" = "快捷鍵：";

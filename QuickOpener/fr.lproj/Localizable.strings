@@ -3,8 +3,6 @@
 "menu_available_applications" = "Apps";
 "menu_actions" = "Actions";
 "add_application" = "Ajouter app";
-"default_launch" = "Par défaut";
-"delete_project" = "Supprimer le projet";
 
 "settings_shortcuts" = "Paramètres des raccourcis";
 "label_shortcut" = "Raccourci :";
