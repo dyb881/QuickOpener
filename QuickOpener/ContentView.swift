@@ -8,10 +8,15 @@
 import SwiftData
 import SwiftUI
 
+/// 主视图，显示项目列表和应用程序选择控件，用于管理文件和打开方式。
 struct ContentView: View {
+    /// 环境对象，引用 `DataManager` 来管理项目和应用程序数据。
     @EnvironmentObject private var dataManager: DataManager
+
+    /// 状态变量，跟踪当前鼠标悬停的项目。
     @State private var hoveredProject: ProjectModel?
 
+    /// 视图主体，包含头部控件和项目列表，设置固定窗口大小。
     var body: some View {
         VStack {
             headerControls
@@ -21,13 +26,19 @@ struct ContentView: View {
         .frame(width: 300, height: 500)
     }
 
+    /// 头部控件，包含过滤文本输入框和添加项目按钮。
     private var headerControls: some View {
         HStack {
-            TextField("过滤项目", text: $dataManager.filterText)
-            addProjectButton
+            TextField("过滤项目", text: $dataManager.filterText) // 输入框，用于过滤项目列表
+            addProjectButton // 添加项目和应用程序的菜单按钮
         }
     }
 
+    /// 创建应用程序选择按钮，显示应用程序图标和名称。
+    /// - Parameters:
+    ///   - app: 要显示的 `ApplicationModel` 实例。
+    ///   - action: 按钮点击时的操作。
+    /// - Returns: 包含图标和名称的按钮视图，鼠标悬停时更新光标。
     private func appButton(_ app: ApplicationModel, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(nsImage: app.icon)
@@ -36,91 +47,98 @@ struct ContentView: View {
         .onHover(perform: updateCursor)
     }
 
+    /// 添加项目和应用程序的菜单按钮，主操作触发添加项目，菜单提供应用程序选择和添加功能。
     private var addProjectButton: some View {
         Menu {
-            Text("启动应用")
+            Text("启动应用") // 显示当前应用程序
             appButton(dataManager.currentApplication) {
-                // 无需执行
+                // 无需执行，显示默认应用
             }
 
-            Text("可用应用")
+            Text("可用应用") // 列出其他可用应用程序
             ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.id) { app in
                 appButton(app) {
-                    dataManager.selectApplication(app)
+                    dataManager.selectApplication(app) // 选择其他应用程序
                 }
             }
 
-            Text("操作")
+            Text("操作") // 其他操作选项
             Button(action: {
-                dataManager.addApplication()
+                dataManager.addApplication() // 打开面板添加新应用程序
             }) {
                 Image(nsImage: NSWorkspace.shared.icon(forFile: "/System/Applications/App Store.app"))
                 Text("添加应用")
             }
             .onHover(perform: updateCursor)
         } label: {
-            Image(systemName: "plus")
+            Image(systemName: "plus") // 菜单按钮图标
         } primaryAction: {
-            dataManager.addProjects()
+            dataManager.addProjects() // 主操作：添加项目
         }
-        .id(dataManager.currentApplication.id)
-        .onHover(perform: updateCursor)
+        .id(dataManager.currentApplication.id) // 确保菜单随当前应用程序更新
+        .onHover(perform: updateCursor) // 鼠标悬停时更新光标
     }
 
+    /// 项目设置菜单，显示项目的默认应用程序并提供切换应用程序或删除项目的选项。
+    /// - Parameter item: 关联的 `ProjectModel` 实例。
+    /// - Returns: 包含应用程序图标和操作菜单的视图。
     private func projectSetting(_ item: ProjectModel) -> some View {
         ZStack {
             Menu {
-                Text("默认启动")
+                Text("默认启动") // 默认应用程序打开选项
                 appButton(item.application) {
-                    item.open()
+                    item.open() // 使用默认应用程序打开项目
                 }
-                Text("可用应用")
+                Text("可用应用") // 其他可用应用程序
                 ForEach(dataManager.applications.filter { $0.path != item.application.path }, id: \.self) { app in
                     appButton(app) {
-                        item.open(app)
+                        item.open(app) // 使用指定应用程序打开项目
                     }
                 }
-                Text("操作")
+                Text("操作") // 其他操作选项
                 Button(action: {
-                    dataManager.removeProjects(item)
+                    dataManager.removeProjects(item) // 删除项目
                 }) {
                     Image(systemName: "trash")
                     Text("删除项目")
                 }
                 .onHover(perform: updateCursor)
             } label: {
-                Image(nsImage: item.application.icon)
+                Image(nsImage: item.application.icon) // 应用程序图标作为菜单触发器
             }
             .frame(width: 20, height: 20)
             .clipped()
             .cornerRadius(5)
-            Image(nsImage: item.application.icon)
+            Image(nsImage: item.application.icon) // 显示应用程序图标
                 .resizable()
                 .scaledToFit()
                 .frame(width: 24, height: 24)
-                .allowsHitTesting(false)
+                .allowsHitTesting(false) // 禁用图标的点击交互
         }
     }
 
+    /// 项目列表视图，显示过滤后的项目，支持点击打开和悬停高亮。
     private var projectsList: some View {
         List(dataManager.renderProjects, id: \.self) { item in
             HStack {
-                projectSetting(item)
-                Text(item.name)
+                projectSetting(item) // 项目设置菜单
+                Text(item.name) // 项目名称
                 Spacer()
             }
-            .contentShape(Rectangle())
+            .contentShape(Rectangle()) // 确保整行可点击
             .onHover { hovering in
-                hoveredProject = hovering ? item : nil
-                updateCursor(isHovering: hovering)
+                hoveredProject = hovering ? item : nil // 更新悬停状态
+                updateCursor(isHovering: hovering) // 更新光标
             }
             .onTapGesture {
-                item.open()
+                item.open() // 点击项目以默认应用程序打开
             }
-            .listRowBackground(hoveredProject == item ? Color.blue.opacity(0.1) : Color.clear)
+            .listRowBackground(hoveredProject == item ? Color.blue.opacity(0.1) : Color.clear) // 悬停时高亮背景
         }
     }
 
+    /// 更新鼠标光标样式，悬停时显示手形光标，离开时恢复箭头光标。
+    /// - Parameter isHovering: 是否处于悬停状态。
     private func updateCursor(isHovering: Bool) {
         if isHovering {
             NSCursor.pointingHand.set()
