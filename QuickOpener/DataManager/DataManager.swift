@@ -13,13 +13,7 @@ internal import UniformTypeIdentifiers
 class DataManager: ObservableObject {
     @Published var projects: [ProjectModel]
     @Published var applications: [ApplicationModel]
-    @Published var currentApplication: ApplicationModel {
-        didSet {
-            print("DataManager: currentApplication")
-            UserDefaults.standard.set(currentApplication.path, forKey: "currentApplicationPath")
-        }
-    }
-
+    @Published var currentApplication: ApplicationModel
     @Published var filterText: String = ""
 
     private let modelContext: ModelContext
@@ -33,8 +27,6 @@ class DataManager: ObservableObject {
             projects = []
             applications = []
         }
-
-        // 读取时以 String 形式取出（写入时也是 String），避免类型不匹配
         if let path = UserDefaults.standard.string(forKey: "currentApplicationPath"), !path.isEmpty {
             currentApplication = ApplicationModel(path: path)
         } else {
@@ -61,13 +53,19 @@ class DataManager: ObservableObject {
 
         let appPath = url.path
         if let existingApp = applications.first(where: { $0.path == appPath }) {
-            currentApplication = existingApp
+            selectApplication(existingApp)
         } else {
             let newApp = ApplicationModel(path: appPath)
             applications.append(newApp)
             modelContext.insert(newApp)
             try? modelContext.save()
-            currentApplication = newApp
+            selectApplication(newApp)
         }
+    }
+
+    // 选择应用
+    func selectApplication(app: ApplicationModel) {
+        currentApplication = app
+        UserDefaults.standard.set(currentApplication.path, forKey: "currentApplicationPath")
     }
 }

@@ -37,9 +37,9 @@ struct ContentView: View {
             .onHover(perform: updateCursor)
 
             Text("可用应用")
-            ForEach(dataManager.applications, id: \.id) { app in
+            ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.id) { app in
                 Button(action: {
-                    dataManager.currentApplication = app
+                    dataManager.selectApplication(app)
                 }) {
                     Image(nsImage: app.icon)
                     Text(app.name)
