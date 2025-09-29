@@ -84,7 +84,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // 显示或激活窗口
     @objc func showWindow() {
-        print("showWindow")
+        print("AppDelegate: showWindow")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let existingWindow = self.window, !existingWindow.isReleasedWhenClosed {
@@ -98,14 +98,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // 激活现有窗口并调整位置
     private func activateWindow(_ window: NSWindow) {
-        print("activateWindow")
+        print("AppDelegate: activateWindow")
         window.makeKeyAndOrderFront(nil) // 确保窗口成为主窗口并显示
         NSApp.activate(ignoringOtherApps: true) // 激活应用程序
     }
 
     // 创建新窗口并显示
     private func createNewWindow() {
-        print("createNewWindow")
+        print("AppDelegate: createNewWindow")
         let mouseLocation = NSEvent.mouseLocation
         print(mouseLocation)
         let windowRect = NSRect(
@@ -139,7 +139,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // 将窗口定位到鼠标光标中心
     private func positionWindowAtCursor(_ window: NSWindow) {
-        print("positionWindowAtCursor")
+        print("AppDelegate: positionWindowAtCursor")
         let mouseLocation = NSEvent.mouseLocation
         print(mouseLocation)
         let windowOrigin = NSPoint(
@@ -151,13 +151,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     // 窗口失去激活状态
     func windowDidResignKey(_: Notification) {
-        print("windowDidResignKey")
+        print("AppDelegate: windowDidResignKey")
         window?.close()
     }
 
     // 窗口关闭时清除引用
     func windowWillClose(_: Notification) {
-        print("windowWillClose")
+        print("AppDelegate: windowWillClose")
         window = nil
     }
 }

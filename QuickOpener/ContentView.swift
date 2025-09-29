@@ -9,9 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var applications: [ApplicationModel]
-    @State private var filterText: String = ""
+    @EnvironmentObject private var dataManager: DataManager
 
     var body: some View {
         VStack {
@@ -24,8 +22,52 @@ struct ContentView: View {
 
     private var headerControls: some View {
         HStack {
-            TextField("过滤项目", text: $filterText)
-            // addProjectButton
+            TextField("过滤项目", text: $dataManager.filterText)
+            addProjectButton
+        }
+    }
+
+    private var addProjectButton: some View {
+        Menu {
+            Text("启动应用")
+            Button(action: {}) {
+                Image(nsImage: dataManager.currentApplication.icon)
+                Text(dataManager.currentApplication.name)
+            }
+            .onHover(perform: updateCursor)
+
+            Text("可用应用")
+            ForEach(dataManager.applications, id: \.id) { app in
+                Button(action: {
+                    dataManager.currentApplication = app
+                }) {
+                    Image(nsImage: app.icon)
+                    Text(app.name)
+                }
+                .onHover(perform: updateCursor)
+            }
+
+            Text("操作")
+            Button(action: {
+                dataManager.addApplication()
+            }) {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: "/System/Applications/App Store.app"))
+                Text("添加应用")
+            }
+            .onHover(perform: updateCursor)
+        } label: {
+            Image(systemName: "plus")
+        } primaryAction: {
+            // stores.addProjects()
+        }
+        .onHover(perform: updateCursor)
+    }
+
+    private func updateCursor(isHovering: Bool) {
+        if isHovering {
+            NSCursor.pointingHand.set()
+        } else {
+            NSCursor.arrow.set()
         }
     }
 }

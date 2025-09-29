@@ -8,13 +8,68 @@
 import AppKit
 import Combine
 import SwiftData
+internal import UniformTypeIdentifiers
 
 class DataManager: ObservableObject {
-    @Published var isDarkMode: Bool = false
+    @Published var projects: [ProjectModel]
+    @Published var applications: [ApplicationModel]
+    @Published var currentApplication: ApplicationModel { didSet {
+        print("DataManager: currentApplication")
+        UserDefaults.standard.set(currentApplication.path, forKey: "currentApplicationPath")
+        // 有时 macOS 的 Menu/SwiftUI 视图不会在模型变更后立即重新渲染。
+        // 这里显式触发 objectWillChange，以确保所有依赖于 currentApplication 的视图刷新。
+        DispatchQueue.main.async { [weak self] in
+            self?.objectWillChange.send()
+        }
+    }}
+    @Published var filterText: String = ""
 
     private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
+        do {
+            self.projects = try modelContext.fetch(FetchDescriptor<ProjectModel>())
+            self.applications = try modelContext.fetch(FetchDescriptor<ApplicationModel>())
+        } catch {
+            self.projects = []
+            self.applications = []
+        }
+
+        // 读取时以 String 形式取出（写入时也是 String），避免类型不匹配
+        if let path = UserDefaults.standard.string(forKey: "currentApplicationPath"), !path.isEmpty {
+            self.currentApplication = ApplicationModel(path: path)
+        } else {
+            self.currentApplication = ApplicationModel.defaultApplication
+        }
+    }
+
+    // 添加应用
+    func addApplication() {
+        print("DataManager: addApplication")
+        let panel = NSOpenPanel()
+        // 默认打开系统的 应用程序 文件夹（本地域），如果不可用回退到 /Applications
+        if let appsURL = FileManager.default.urls(for: .applicationDirectory, in: .localDomainMask).first {
+            panel.directoryURL = appsURL
+        } else {
+            panel.directoryURL = URL(fileURLWithPath: "/Applications", isDirectory: true)
+        }
+        panel.allowedContentTypes = [.application]
+        panel.allowsMultipleSelection = false
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+
+        guard panel.runModal() == .OK, let url = panel.url, !url.path.isEmpty else { return }
+
+        let appPath = url.path
+        if let existingApp = applications.first(where: { $0.path == appPath }) {
+            currentApplication = existingApp
+        } else {
+            let newApp = ApplicationModel(path: appPath)
+            applications.append(newApp)
+            modelContext.insert(newApp)
+            try? modelContext.save()
+            currentApplication = newApp
+        }
     }
 }
