@@ -16,6 +16,8 @@ struct ContentView: View {
             headerControls
                 .padding([.horizontal, .top])
             // projectsList
+
+            Text(dataManager.filterText)
         }
         .frame(width: 300, height: 500)
     }
@@ -27,24 +29,26 @@ struct ContentView: View {
         }
     }
 
+    private func appButton(_ app: ApplicationModel, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(nsImage: app.icon)
+            Text(app.name)
+        }
+        .onHover(perform: updateCursor)
+    }
+
     private var addProjectButton: some View {
         Menu {
             Text("启动应用")
-            Button(action: {}) {
-                Image(nsImage: dataManager.currentApplication.icon)
-                Text(dataManager.currentApplication.name)
+            appButton(dataManager.currentApplication) {
+                // 无需执行
             }
-            .onHover(perform: updateCursor)
 
             Text("可用应用")
             ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.id) { app in
-                Button(action: {
+                appButton(app) {
                     dataManager.selectApplication(app)
-                }) {
-                    Image(nsImage: app.icon)
-                    Text(app.name)
                 }
-                .onHover(perform: updateCursor)
             }
 
             Text("操作")
@@ -60,6 +64,7 @@ struct ContentView: View {
         } primaryAction: {
             // stores.addProjects()
         }
+        .id(dataManager.currentApplication.id)
         .onHover(perform: updateCursor)
     }
 

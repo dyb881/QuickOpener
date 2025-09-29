@@ -64,7 +64,8 @@ class DataManager: ObservableObject {
     }
 
     // 选择应用
-    func selectApplication(app: ApplicationModel) {
+    func selectApplication(_ app: ApplicationModel) {
+        print("DataManager: selectApplication -> \(app.path)")
         currentApplication = app
         UserDefaults.standard.set(currentApplication.path, forKey: "currentApplicationPath")
     }
