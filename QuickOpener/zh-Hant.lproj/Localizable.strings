@@ -1,4 +1,4 @@
-"filter_projects" = "過濾專案";
+"filter_projectsΩ" = "過濾專案";
 "menu_current_application" = "啟動應用";
 "menu_available_applications" = "可用應用";
 "menu_actions" = "操作";
@@ -29,4 +29,4 @@
 "french" = "法語";
 "spanish" = "西班牙語";
 
-"restart_takes_effect" = "需要重啟";
+"restart_takes_effect" = "重啟生效";
