@@ -6,7 +6,7 @@
 "default_launch" = "Inicio predeterminado";
 "delete_project" = "Eliminar proyecto";
 
-"settings_shortcuts" = "Atajos de teclado";
+"settings_shortcuts" = "Configuración de atajos";
 "label_shortcut" = "Atajo:";
 "button_reset_shortcut" = "Restablecer atajo";
 "settings_about" = "Acerca de";
@@ -29,4 +29,4 @@
 "french" = "Francés";
 "spanish" = "Español";
 
-"restart_takes_effect" = "Requiere reinicio";
+"restart_takes_effect" = "Los cambios se aplicarán después de reiniciar";

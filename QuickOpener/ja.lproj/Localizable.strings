@@ -24,5 +24,9 @@
 "chinese_simplified" = "簡体字中国語";
 "chinese_traditional" = "繁体字中国語";
 "japanese" = "日本語";
+"korean" = "韓国語";
+"german" = "ドイツ語";
+"french" = "フランス語";
+"spanish" = "スペイン語";
 
 "restart_takes_effect" = "再起動後に反映";

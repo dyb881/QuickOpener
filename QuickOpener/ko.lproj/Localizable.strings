@@ -1,9 +1,4 @@
-"filt"default_launch" = "기본값으로 설정";
-"delete_project" = "프로젝트 삭제";
-
-"settings_shortcuts" = "단축키 설정";
-"label_shortcut" = "단축키:";
-"button_reset_shortcut" = "단축키 초기화";jects" = "프로젝트 필터";
+"filter_projects" = "프로젝트 필터";
 "menu_current_application" = "애플리케이션 실행";
 "menu_available_applications" = "사용 가능한 애플리케이션";
 "menu_actions" = "작업";
@@ -30,5 +25,8 @@
 "chinese_traditional" = "중국어 번체";
 "japanese" = "일본어";
 "korean" = "한국어";
+"german" = "독일어";
+"french" = "프랑스어";
+"spanish" = "스페인어";
 
 "restart_takes_effect" = "재시작 후 적용";

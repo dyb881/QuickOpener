@@ -26,5 +26,7 @@
 "japanese" = "Japanisch";
 "korean" = "Koreanisch";
 "german" = "Deutsch";
+"french" = "Französisch";
+"spanish" = "Spanisch";
 
 "restart_takes_effect" = "Neustart erforderlich";

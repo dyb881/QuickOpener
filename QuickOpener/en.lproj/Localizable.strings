@@ -11,7 +11,7 @@
 "button_reset_shortcut" = "Reset Shortcut";
 "settings_about" = "About";
 "app_description_short" = "Quickly launch and manage your projects";
-"app_description_long" = "Use the global shortcut (default Option+Z) to open the project selector anytime and boost your productivity.";
+"app_description_long" = "Use global shortcut (default Option+Z) to open project selection window anytime, improving work efficiency.";
 
 "menu_show_window" = "Show Window";
 "menu_reset_cache" = "Reset Cache";

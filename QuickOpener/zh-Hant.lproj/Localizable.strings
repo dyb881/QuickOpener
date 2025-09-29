@@ -3,7 +3,7 @@
 "menu_available_applications" = "可用應用";
 "menu_actions" = "操作";
 "add_application" = "新增應用";
-"default_launch" = "設為預設";
+"default_launch" = "預設啟動";
 "delete_project" = "刪除專案";
 
 "settings_shortcuts" = "快捷鍵設定";
@@ -23,5 +23,10 @@
 "english" = "英語";
 "chinese_simplified" = "簡體中文";
 "chinese_traditional" = "繁體中文";
+"japanese" = "日語";
+"korean" = "韓語";
+"german" = "德語";
+"french" = "法語";
+"spanish" = "西班牙語";
 
 "restart_takes_effect" = "重啟生效";
