@@ -45,6 +45,7 @@ class DataManager: ObservableObject {
 
     // 清空所有缓存
     func clearCache() {
+        print("DataManager: clearCache")
         try? modelContext.delete(model: ProjectModel.self)
         try? modelContext.delete(model: ApplicationModel.self)
         try? modelContext.save()
@@ -89,6 +90,7 @@ class DataManager: ObservableObject {
 
     // 添加项目
     func addProjects() {
+        print("DataManager: addProjects")
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = true
@@ -100,7 +102,11 @@ class DataManager: ObservableObject {
 
         let newProjects = panel.urls
             .filter { !existingPaths.contains($0.path) }
-            .map { ProjectModel(path: $0.path, application: currentApplication) }
+            .map { ProjectModel(
+                path: $0.path,
+                application: currentApplication,
+                weight: projects.isEmpty ? 0 : projects[0].weight + 1
+            ) }
 
         guard !newProjects.isEmpty else { return }
 
@@ -111,6 +117,7 @@ class DataManager: ObservableObject {
 
     // 山吹项目
     func removeProjects(_ project: ProjectModel) {
+        print("DataManager: removeProjects")
         modelContext.delete(project)
         try? modelContext.save()
         projects = projects.filter { $0 != project }

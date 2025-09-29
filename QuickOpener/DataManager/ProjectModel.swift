@@ -32,11 +32,11 @@ final class ProjectModel: FileCommonDataProtocol {
     /// - Parameters:
     ///   - path: 文件系统路径（绝对路径）。
     ///   - application: 默认用于打开该文件的 `ApplicationModel` 实例。
-    init(path: String, application: ApplicationModel) {
+    init(path: String, application: ApplicationModel, weight: Int = 0) {
         id = UUID()
         self.path = path
         self.application = application
-        weight = 0
+        self.weight = weight
     }
 
     /// 使用指定的（或当前的）应用程序打开此项目文件，并将权重计数加一。
