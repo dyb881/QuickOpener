@@ -72,20 +72,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menuShowWindowItem.keyEquivalentModifierMask = .option
         menu.addItem(menuShowWindowItem)
         
-        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem.separator()) // 分割线
         
         // 重置缓存
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu_reset_cache", comment: "Reset cache in status menu"), action: #selector(resetCache), keyEquivalent: ""))
 
         // 偏好设置
-        let settingsItem = NSMenuItem(title: NSLocalizedString("menu_settings", comment: "Open settings in status menu"), action: #selector(NSApp.showSettingsWindow), keyEquivalent: ",")
+        let settingsItem = NSMenuItem(title: NSLocalizedString("menu_settings", comment: "Open settings in status menu"), action: Selector(("showPreferencesWindow:")), keyEquivalent: ",")
         menu.addItem(settingsItem)
 
-        menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem.separator()) // 分割线
 
         // 退出
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu_quit", comment: "Quit in status menu"), action: #selector(quitApp), keyEquivalent: "q"))
-        
+
         statusItem?.menu = menu
 
         // 注册全局快捷键，触发显示窗口
