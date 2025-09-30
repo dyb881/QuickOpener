@@ -157,6 +157,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         newWindow.standardWindowButton(.miniaturizeButton)?.isEnabled = false // 禁用最小化按钮
         newWindow.standardWindowButton(.zoomButton)?.isEnabled = false // 禁用缩放按钮
         newWindow.level = .floating // 设置窗口为浮动层级
+        newWindow.title = "QuickOpener"
+
+        let controller = NSTitlebarAccessoryViewController()
+        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 60, height: 24)) // 调整容器大小
+        let textField = NSTextField(labelWithString: "⌥ + Z")
+        textField.alignment = .center // 文本居中
+        textField.frame = containerView.bounds // 使用 containerView 的边界
+        containerView.addSubview(textField)
+        controller.view = containerView
+        controller.layoutAttribute = .trailing
+        newWindow.addTitlebarAccessoryViewController(controller)
+
         activateWindow(newWindow)
         window = newWindow
     }
