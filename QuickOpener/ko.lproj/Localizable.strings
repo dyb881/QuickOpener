@@ -14,6 +14,7 @@
 "menu_show_window" = "창 표시";
 "menu_reset_cache" = "캐시 초기화";
 "menu_quit" = "종료";
+"menu_settings" = "환경설정...";
 
 "settings_language" = "언어";
 "label_language" = "언어 선택";

@@ -14,6 +14,7 @@
 "menu_show_window" = "Afficher la fenêtre";
 "menu_reset_cache" = "Réinitialiser le cache";
 "menu_quit" = "Quitter";
+"menu_settings" = "Préférences...";
 
 "settings_language" = "Langue";
 "label_language" = "Choisir la langue";

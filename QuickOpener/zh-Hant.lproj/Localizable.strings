@@ -14,6 +14,7 @@
 "menu_show_window" = "顯示視窗";
 "menu_reset_cache" = "重置快取";
 "menu_quit" = "退出";
+"menu_settings" = "偏好設置...";
 
 "settings_language" = "語言";
 "label_language" = "選擇語言";

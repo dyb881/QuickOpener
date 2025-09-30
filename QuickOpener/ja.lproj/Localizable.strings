@@ -14,6 +14,7 @@
 "menu_show_window" = "ウィンドウを表示";
 "menu_reset_cache" = "キャッシュをリセット";
 "menu_quit" = "終了";
+"menu_settings" = "環境設定...";
 
 "settings_language" = "言語";
 "label_language" = "言語を選択";

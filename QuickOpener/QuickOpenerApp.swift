@@ -66,9 +66,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         // 创建菜单栏菜单
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: NSLocalizedString("menu_show_window", comment: "Show window in status menu"), action: #selector(showWindow), keyEquivalent: ""))
+
+        // 显示窗口
+        let menuShowWindowItem = NSMenuItem(title: NSLocalizedString("menu_show_window", comment: "Show window in status menu"), action: #selector(showWindow), keyEquivalent: "z")
+        menuShowWindowItem.keyEquivalentModifierMask = .option
+        menu.addItem(menuShowWindowItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        
+        // 重置缓存
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu_reset_cache", comment: "Reset cache in status menu"), action: #selector(resetCache), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: NSLocalizedString("menu_quit", comment: "Quit in status menu"), action: #selector(quitApp), keyEquivalent: ""))
+
+        // 偏好设置
+        let settingsItem = NSMenuItem(title: NSLocalizedString("menu_settings", comment: "Open settings in status menu"), action: #selector(NSApp.showSettingsWindow), keyEquivalent: ",")
+        menu.addItem(settingsItem)
+
+        menu.addItem(NSMenuItem.separator())
+
+        // 退出
+        menu.addItem(NSMenuItem(title: NSLocalizedString("menu_quit", comment: "Quit in status menu"), action: #selector(quitApp), keyEquivalent: "q"))
+        
         statusItem?.menu = menu
 
         // 注册全局快捷键，触发显示窗口
