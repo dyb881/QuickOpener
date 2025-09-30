@@ -88,25 +88,29 @@ struct ContentView: View {
         ZStack {
             Menu {
                 Text(LocalizedStringKey("menu_current_application")) // 默认应用程序打开选项
-                appButton(item.application) {
+                Button(action: {
                     item.open() // 使用默认应用程序打开项目
+                }) {
+                    Image(nsImage: item.applicationIcon)
+                    Text(item.applicationName)
                 }
+                .onHover(perform: updateCursor)
 
                 if dataManager.applications.count >= 2 {
                     Text(LocalizedStringKey("menu_available_applications")) // 其他可用应用程序
-                    ForEach(dataManager.applications.filter { $0.path != item.application.path }, id: \.self) { app in
+                    ForEach(dataManager.applications.filter { $0.path != item.applicationPath }, id: \.self) { app in
                         appButton(app) {
-                            item.open(app) // 使用指定应用程序打开项目
+                            item.open(app.path) // 使用指定应用程序打开项目
                         }
                     }
                 }
             } label: {
-                Image(nsImage: item.application.icon) // 应用程序图标作为菜单触发器
+                Image(nsImage: item.applicationIcon) // 应用程序图标作为菜单触发器
             }
             .frame(width: 20, height: 20)
             .clipped()
             .cornerRadius(5)
-            Image(nsImage: item.application.icon) // 显示应用程序图标
+            Image(nsImage: item.applicationIcon) // 显示应用程序图标
                 .resizable()
                 .scaledToFit()
                 .frame(width: 24, height: 24)

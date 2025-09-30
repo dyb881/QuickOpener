@@ -44,24 +44,42 @@ class DataManager: ObservableObject {
 
     /// 初始化 `DataManager`，从模型上下文加载项目和应用程序数据。
     /// - Parameter modelContext: SwiftData 的模型上下文。
-    /// - 如果加载失败，初始化为空项目列表和默认 Finder 应用程序。
+    /// - 如果加载失败，初始化为空项目列表。
+    /// - 确保默认的 Finder 应用程序存在于应用程序列表中。
     /// - 从 UserDefaults 加载当前应用程序路径，若无则使用默认 Finder。
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
+
+        // 初始化存储属性
+        var initialProjects: [ProjectModel] = []
+        var initialApplications: [ApplicationModel] = []
+
+        // 从数据库加载数据
         do {
-            projects = try modelContext.fetch(FetchDescriptor<ProjectModel>())
-            applications = try modelContext.fetch(FetchDescriptor<ApplicationModel>())
+            initialProjects = try modelContext.fetch(FetchDescriptor<ProjectModel>())
+            initialApplications = try modelContext.fetch(FetchDescriptor<ApplicationModel>())
         } catch {
-            projects = []
-            applications = [ApplicationModel.defaultApplication]
-            modelContext.insert(ApplicationModel.defaultApplication)
+            print("Error fetching data: \(error)")
+        }
+
+        // 确保默认的 Finder 应用程序存在
+        if initialApplications.isEmpty || !initialApplications.contains(where: { $0.path == ApplicationModel.defaultApplication.path }) {
+            let defaultApp = ApplicationModel.defaultApplication
+            modelContext.insert(defaultApp)
+            initialApplications.append(defaultApp)
             try? modelContext.save()
         }
-        if let path = UserDefaults.standard.string(forKey: "currentApplicationPath"), !path.isEmpty {
-            currentApplication = ApplicationModel(path: path)
-        } else {
-            currentApplication = ApplicationModel.defaultApplication
-        }
+
+        // 确定初始的当前应用程序
+        let savedPath = UserDefaults.standard.string(forKey: "currentApplicationPath")
+        let initialCurrentApp = initialApplications.first(where: { $0.path == savedPath }) ??
+            initialApplications.first(where: { $0.path == ApplicationModel.defaultApplication.path }) ??
+            ApplicationModel.defaultApplication
+
+        // 初始化所有 @Published 属性
+        projects = initialProjects
+        applications = initialApplications
+        currentApplication = initialCurrentApp
     }
 
     /// 清空所有缓存数据，包括项目、应用程序和 UserDefaults 中的当前应用程序路径。
@@ -142,7 +160,7 @@ class DataManager: ObservableObject {
             .filter { !existingPaths.contains($0.path) }
             .map { ProjectModel(
                 path: $0.path,
-                application: currentApplication,
+                applicationPath: currentApplication.path,
                 weight: projects.isEmpty ? 0 : projects[0].weight + 1
             ) }
 
