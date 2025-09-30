@@ -59,6 +59,7 @@ struct SettingsView: View {
                 Text(LocalizedStringKey("app_description_short"))
                     .foregroundColor(.secondary)
                 Text(LocalizedStringKey("app_description_long"))
+                    .fixedSize(horizontal: false, vertical: true)
                     .foregroundColor(.secondary)
             }.padding(.vertical, 5)
         }

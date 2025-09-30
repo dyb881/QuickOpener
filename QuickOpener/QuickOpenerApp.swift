@@ -71,15 +71,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let menuShowWindowItem = NSMenuItem(title: NSLocalizedString("menu_show_window", comment: "Show window in status menu"), action: #selector(showWindow), keyEquivalent: "z")
         menuShowWindowItem.keyEquivalentModifierMask = .option
         menu.addItem(menuShowWindowItem)
-        
+
         menu.addItem(NSMenuItem.separator()) // 分割线
-        
+
         // 重置缓存
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu_reset_cache", comment: "Reset cache in status menu"), action: #selector(resetCache), keyEquivalent: ""))
-
-        // 偏好设置
-        let settingsItem = NSMenuItem(title: NSLocalizedString("menu_settings", comment: "Open settings in status menu"), action: Selector(("showPreferencesWindow:")), keyEquivalent: ",")
-        menu.addItem(settingsItem)
 
         menu.addItem(NSMenuItem.separator()) // 分割线
 
@@ -97,16 +93,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         showWindow()
     }
 
-    /// 退出应用程序。
-    @objc func quitApp() {
-        NSApp.terminate(nil)
-    }
-
     /// 重置数据管理器的缓存并重新显示窗口。
     @objc func resetCache() {
         print("AppDelegate: resetCache")
         QuickOpenerApp.dataManager.clearCache()
         showWindow()
+    }
+
+    /// 退出应用程序。
+    @objc func quitApp() {
+        NSApp.terminate(nil)
     }
 
     /// 显示或激活窗口，若窗口不存在则创建新窗口。
