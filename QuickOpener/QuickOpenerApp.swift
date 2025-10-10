@@ -14,6 +14,8 @@ import SwiftUI
 extension KeyboardShortcuts.Name {
     /// 切换项目窗口的快捷键，默认为 Option + Z。
     static let toggleProjectOpener = Self("toggleProjectOpener", default: .init(.z, modifiers: .option))
+    /// ESC
+    static let closeWindow = Self("closeWindow", default: .init(.escape))
 }
 
 /// 主应用程序入口，配置无默认窗口，使用菜单栏图标和全局快捷键。
@@ -84,9 +86,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         statusItem?.menu = menu
 
-        // 注册全局快捷键，触发显示窗口
+        // 注册全局快捷键，
         KeyboardShortcuts.onKeyDown(for: .toggleProjectOpener) { [weak self] in
-            self?.showWindow()
+            self?.showWindow() // 触发显示窗口
+        }
+        KeyboardShortcuts.onKeyDown(for: .closeWindow) { [weak self] in
+            self?.window?.close() // Esc 键关闭窗口
         }
 
         // 初次启动时显示窗口
