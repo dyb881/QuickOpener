@@ -53,6 +53,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     /// 主窗口引用，存储当前打开的窗口。
     private var window: NSWindow?
 
+    /// 设置窗口引用
+    private var settingsWindow: NSWindow?
+
     /// 菜单栏状态栏项，用于显示应用程序图标和菜单。
     private var statusItem: NSStatusItem?
 
@@ -75,6 +78,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         menu.addItem(menuShowWindowItem)
 
         menu.addItem(NSMenuItem.separator()) // 分割线
+
+        // 显示设置
+        menu.addItem(NSMenuItem(title: NSLocalizedString("menu_settings", comment: "Open settings in status menu"), action: #selector(showSetting), keyEquivalent: ""))
 
         // 重置缓存
         menu.addItem(NSMenuItem(title: NSLocalizedString("menu_reset_cache", comment: "Reset cache in status menu"), action: #selector(resetCache), keyEquivalent: ""))
@@ -191,15 +197,60 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.setFrameOrigin(windowOrigin)
     }
 
+    /// 打开设置窗口
+    @objc func showSetting() {
+        print("AppDelegate: showSetting")
+        if let existingWindow = settingsWindow, !existingWindow.isReleasedWhenClosed {
+            activateWindow(existingWindow)
+        } else {
+            let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
+            let windowRect = NSRect(
+                x: screenFrame.midX - 250,
+                y: screenFrame.midY - 400,
+                width: 500,
+                height: 300
+            )
+            let newWindow = NSWindow(
+                contentRect: windowRect,
+                styleMask: [.titled, .closable],
+                backing: .buffered,
+                defer: false
+            )
+            let hostingController = NSHostingController(rootView:
+                SettingsView()
+                    .modelContainer(QuickOpenerApp.sharedModelContainer)
+                    .environmentObject(QuickOpenerApp.dataManager)
+                    .frame(width: 500, height: 300)
+            )
+            newWindow.contentViewController = hostingController
+            newWindow.delegate = self
+            newWindow.isReleasedWhenClosed = false
+            newWindow.isMovableByWindowBackground = true // 允许通过背景拖动窗口
+            newWindow.standardWindowButton(.miniaturizeButton)?.isEnabled = false // 禁用最小化按钮
+            newWindow.standardWindowButton(.zoomButton)?.isEnabled = false // 禁用缩放按钮
+            newWindow.title = NSLocalizedString("menu_settings", comment: "Settings window title")
+            activateWindow(newWindow)
+            settingsWindow = newWindow
+        }
+    }
+
     /// 当窗口失去激活状态时关闭窗口。
-    func windowDidResignKey(_: Notification) {
+    func windowDidResignKey(_ notification: Notification) {
         print("AppDelegate: windowDidResignKey")
-        window?.close()
+        if let window = notification.object as? NSWindow, window == self.window {
+            window.close()
+        }
     }
 
     /// 窗口关闭时清除窗口引用。
-    func windowWillClose(_: Notification) {
+    func windowWillClose(_ notification: Notification) {
         print("AppDelegate: windowWillClose")
-        window = nil
+        if let closingWindow = notification.object as? NSWindow {
+            if closingWindow == window {
+                window = nil
+            } else if closingWindow == settingsWindow {
+                settingsWindow = nil
+            }
+        }
     }
 }
