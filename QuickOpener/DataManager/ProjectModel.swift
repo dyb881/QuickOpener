@@ -26,6 +26,9 @@ final class ProjectModel: FileCommonDataProtocol {
     /// 权重值，用于记录打开频率或排序优先级，默认为 0，每次调用 `open(_:)` 时递增。
     var weight: Int
 
+    /// 安全书签数据，用于存储安全访问书签。
+    var bookmarkData: Data?
+
     /// 初始化一个新的 `ProjectModel` 实例，关联文件路径和默认打开应用程序。
     /// - Parameters:
     ///   - path: 文件的绝对路径（字符串）。
@@ -36,6 +39,8 @@ final class ProjectModel: FileCommonDataProtocol {
         self.path = path
         self.applicationPath = applicationPath
         self.weight = weight
+        let url = URL(fileURLWithPath: path)
+        bookmarkData = try? url.bookmarkData(options: .withSecurityScope)
     }
 
     /// 关联应用程序的URL
@@ -53,11 +58,27 @@ final class ProjectModel: FileCommonDataProtocol {
         NSWorkspace.shared.icon(forFile: applicationPath)
     }
 
+    /// 从书签数据解析的安全 URL。
+    var bookmarkURL: URL? {
+        guard let data = bookmarkData else { return nil }
+        var isStale = false
+        do {
+            let url = try URL(resolvingBookmarkData: data, options: .withSecurityScope, bookmarkDataIsStale: &isStale)
+            if isStale {
+                // 可选：更新书签数据
+                bookmarkData = try? url.bookmarkData(options: .withSecurityScope)
+            }
+            return url
+        } catch {
+            return nil
+        }
+    }
+
     /// 使用指定或当前关联的应用程序打开项目文件，并增加权重计数。
     ///
     /// 如果文件不存在，将从数据管理器中移除该项目。
     /// 调用 `NSWorkspace.shared.open(_:withApplicationAt:configuration:)` 启动应用程序打开文件。
-    /// - Parameter newApplication: 可选参数，用于替换当前关联的 `ApplicationModel`。
+    /// - Parameter newApplicationPath: 可选参数，用于替换当前关联的 `ApplicationModel`。
     func open(_ newApplicationPath: String? = nil) {
         // 检查文件是否存在，不存在则移除项目
         if !exists {
@@ -73,7 +94,32 @@ final class ProjectModel: FileCommonDataProtocol {
         // 增加权重计数
         weight += 1
 
+        // 优先使用 bookmarkURL
+        let urlToUse = bookmarkURL ?? url
+        
+        // 开始安全作用域访问
+        var accessGranted = false
+        if let bookmarkURL = bookmarkURL {
+            accessGranted = bookmarkURL.startAccessingSecurityScopedResource()
+            print("安全作用域访问: \(accessGranted ? "已授权" : "未授权") - \(bookmarkURL.path)")
+        }
+
         // 使用 NSWorkspace 打开文件
-        NSWorkspace.shared.open([url], withApplicationAt: applicationUrl, configuration: NSWorkspace.OpenConfiguration())
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        
+        NSWorkspace.shared.open([urlToUse], withApplicationAt: applicationUrl, configuration: configuration) { [weak self] app, error in
+            if let error = error {
+                print("打开文件失败: \(error.localizedDescription)")
+            } else {
+                print("文件打开成功")
+            }
+            
+            // 在打开完成后停止安全作用域访问
+            if accessGranted, let bookmarkURL = self?.bookmarkURL {
+                bookmarkURL.stopAccessingSecurityScopedResource()
+                print("安全作用域访问已停止")
+            }
+        }
     }
 }
