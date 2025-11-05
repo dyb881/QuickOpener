@@ -14,8 +14,6 @@ import SwiftUI
 extension KeyboardShortcuts.Name {
     /// 切换项目窗口的快捷键，默认为 Option + Z。
     static let toggleProjectOpener = Self("toggleProjectOpener", default: .init(.z, modifiers: .option))
-    /// ESC
-    static let closeWindow = Self("closeWindow", default: .init(.escape))
 }
 
 /// 主应用程序入口，配置无默认窗口，使用菜单栏图标和全局快捷键。
@@ -59,6 +57,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     /// 菜单栏状态栏项，用于显示应用程序图标和菜单。
     private var statusItem: NSStatusItem?
 
+    /// ESC 键事件监视器
+    private var escKeyMonitor: Any?
+
     /// 应用程序启动完成时调用，设置菜单栏图标、菜单和全局快捷键。
     func applicationDidFinishLaunching(_: Notification) {
         // 设置菜单栏图标
@@ -92,12 +93,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         statusItem?.menu = menu
 
-        // 注册全局快捷键，
+        // 注册全局快捷键
         KeyboardShortcuts.onKeyDown(for: .toggleProjectOpener) { [weak self] in
             self?.showWindow() // 触发显示窗口
-        }
-        KeyboardShortcuts.onKeyDown(for: .closeWindow) { [weak self] in
-            self?.window?.close() // Esc 键关闭窗口
         }
 
         // 初次启动时显示窗口
@@ -182,6 +180,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         activateWindow(newWindow)
         window = newWindow
+
+        // 注册 ESC 键监听
+        setupEscKeyMonitor()
     }
 
     /// 将窗口定位到鼠标光标中心附近。
@@ -195,6 +196,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             y: mouseLocation.y - 450 + 23
         )
         window.setFrameOrigin(windowOrigin)
+    }
+
+    /// 设置 ESC 键事件监视器
+    private func setupEscKeyMonitor() {
+        // 先移除现有的监视器
+        removeEscKeyMonitor()
+
+        // 添加新的本地事件监视器
+        escKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            if event.keyCode == 53 { // 53 是 ESC 键的 keyCode
+                self?.window?.close()
+                return nil // 阻止事件继续传递
+            }
+            return event
+        }
+    }
+
+    /// 移除 ESC 键事件监视器
+    private func removeEscKeyMonitor() {
+        if let monitor = escKeyMonitor {
+            NSEvent.removeMonitor(monitor)
+            escKeyMonitor = nil
+        }
     }
 
     /// 打开设置窗口
@@ -242,11 +266,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    /// 窗口关闭时清除窗口引用。
+    /// 窗口关闭时清除窗口引用和 ESC 键监视器。
     func windowWillClose(_ notification: Notification) {
         print("AppDelegate: windowWillClose")
         if let closingWindow = notification.object as? NSWindow {
             if closingWindow == window {
+                // 移除 ESC 键监视器
+                removeEscKeyMonitor()
                 window = nil
             } else if closingWindow == settingsWindow {
                 settingsWindow = nil
