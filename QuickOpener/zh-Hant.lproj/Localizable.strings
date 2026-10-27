@@ -1,4 +1,4 @@
-"filter_projectsΩ" = "過濾專案";
+"filter_projects" = "過濾專案";
 "menu_current_application" = "啟動應用";
 "menu_available_applications" = "可用應用";
 "menu_actions" = "操作";
@@ -29,3 +29,13 @@
 "spanish" = "西班牙語";
 
 "restart_takes_effect" = "重啟生效";
+
+/* Actions & dialogs */
+"add_projects" = "新增專案…";
+"remove_application" = "刪除應用";
+"reset_cache_confirm_title" = "重置快取？";
+"reset_cache_confirm_message" = "將清空全部專案和已新增的應用，此操作無法復原。";
+"button_cancel" = "取消";
+"button_clear" = "清空";
+"restart_failed_title" = "無法自動重啟";
+"restart_failed_message" = "請手動退出並重新開啟 QuickOpener 使語言設定生效。";

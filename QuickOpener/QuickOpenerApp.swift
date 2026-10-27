@@ -48,6 +48,9 @@ struct QuickOpenerApp: App {
 
 /// 应用程序代理，管理菜单栏图标、全局快捷键和窗口的生命周期。
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    /// 项目窗口的内容尺寸（与 ContentView 的固定 frame 保持一致）。
+    private static let contentSize = NSSize(width: 300, height: 500)
+
     /// 主窗口引用，存储当前打开的窗口。
     private var window: NSWindow?
 
@@ -95,18 +98,29 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         // 注册全局快捷键
         KeyboardShortcuts.onKeyDown(for: .toggleProjectOpener) { [weak self] in
-            self?.showWindow() // 触发显示窗口
+            self?.toggleWindow() // 触发显示/隐藏窗口
         }
 
         // 初次启动时显示窗口
         showWindow()
     }
 
-    /// 重置数据管理器的缓存并重新显示窗口。
+    /// 重置数据管理器的缓存（先弹确认，避免误触清空数据）并重新显示窗口。
     @objc func resetCache() {
         print("AppDelegate: resetCache")
-        QuickOpenerApp.dataManager.clearCache()
-        showWindow()
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = NSLocalizedString("reset_cache_confirm_title", comment: "Reset cache confirmation title")
+        alert.informativeText = NSLocalizedString("reset_cache_confirm_message", comment: "Reset cache confirmation message")
+        alert.addButton(withTitle: NSLocalizedString("button_cancel", comment: "Cancel button"))
+        alert.addButton(withTitle: NSLocalizedString("button_clear", comment: "Clear button"))
+        // 让 statusItem 菜单先收起，避免在菜单事件中同步 runModal
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            guard alert.runModal() == .alertSecondButtonReturn else { return }
+            QuickOpenerApp.dataManager.clearCache()
+            self.showWindow()
+        }
     }
 
     /// 退出应用程序。
@@ -114,18 +128,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         NSApp.terminate(nil)
     }
 
-    /// 显示或激活窗口，若窗口不存在则创建新窗口。
+    /// 显示窗口，若窗口不存在则创建新窗口。
     @objc func showWindow() {
         print("AppDelegate: showWindow")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            if let existingWindow = self.window, !existingWindow.isReleasedWhenClosed {
+            if let existingWindow = self.window {
                 self.activateWindow(existingWindow)
-                positionWindowAtCursor(existingWindow)
+                self.positionWindowAtCursor(existingWindow)
             } else {
                 self.createNewWindow()
             }
         }
+    }
+
+    /// 显示/隐藏窗口（全局快捷键入口）。窗口已在前台时隐藏，否则显示。
+    func toggleWindow() {
+        print("AppDelegate: toggleWindow")
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let window = self.window, window.isVisible, NSApp.isActive {
+                self.hideWindow(window)
+            } else {
+                self.showWindow()
+            }
+        }
+    }
+
+    /// 隐藏窗口。窗口实例与视图状态保留，下次显示直接复用。
+    private func hideWindow(_ window: NSWindow) {
+        print("AppDelegate: hideWindow")
+        window.orderOut(nil)
     }
 
     /// 激活现有窗口并将其置于前台。
@@ -139,16 +172,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     /// 创建并显示新窗口，定位于鼠标光标附近。
     private func createNewWindow() {
         print("AppDelegate: createNewWindow")
-        let mouseLocation = NSEvent.mouseLocation
-        print(mouseLocation)
-        let windowRect = NSRect(
-            x: mouseLocation.x - 60,
-            y: mouseLocation.y - 500 - 450 + 23,
-            width: 300,
-            height: 500
-        )
-        let newWindow = NSWindow(
-            contentRect: windowRect,
+        let newWindow = NSPanel(
+            contentRect: NSRect(origin: .zero, size: Self.contentSize),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -165,8 +190,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         newWindow.isMovableByWindowBackground = true // 允许通过背景拖动窗口
         newWindow.standardWindowButton(.miniaturizeButton)?.isEnabled = false // 禁用最小化按钮
         newWindow.standardWindowButton(.zoomButton)?.isEnabled = false // 禁用缩放按钮
-        newWindow.level = .floating // 设置窗口为浮动层级
+        newWindow.isFloatingPanel = true // 设置面板为浮动层级
+        newWindow.becomesKeyOnlyIfNeeded = true // 仅在需要时成为 key（如 Sheet 模态），兼容 beginSheetModal
         newWindow.title = "QuickOpener"
+
+        // 将窗口引用传递给 DataManager，用于 NSOpenPanel 的 Sheet 模态
+        QuickOpenerApp.dataManager.hostingWindow = newWindow
 
         let controller = NSTitlebarAccessoryViewController()
         let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 60, height: 24)) // 调整容器大小
@@ -178,6 +207,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         controller.layoutAttribute = .trailing
         newWindow.addTitlebarAccessoryViewController(controller)
 
+        // 先按鼠标位置定位，再激活显示，避免窗口先在屏幕角落闪一下
+        newWindow.setFrameOrigin(targetOrigin(for: newWindow, mouse: NSEvent.mouseLocation))
         activateWindow(newWindow)
         window = newWindow
 
@@ -185,17 +216,36 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         setupEscKeyMonitor()
     }
 
-    /// 将窗口定位到鼠标光标中心附近。
+    /// 将窗口定位到鼠标光标附近。
     /// - Parameter window: 要定位的窗口。
     private func positionWindowAtCursor(_ window: NSWindow) {
         print("AppDelegate: positionWindowAtCursor")
-        let mouseLocation = NSEvent.mouseLocation
-        print(mouseLocation)
-        let windowOrigin = NSPoint(
-            x: mouseLocation.x - 60,
-            y: mouseLocation.y - 450 + 23
-        )
-        window.setFrameOrigin(windowOrigin)
+        window.setFrameOrigin(targetOrigin(for: window, mouse: NSEvent.mouseLocation))
+    }
+
+    /// 计算窗口应放置的原点：顶边位于光标下方 8pt，并完整限制在光标所在屏幕的可见区域内。
+    private func targetOrigin(for window: NSWindow, mouse: NSPoint) -> NSPoint {
+        let size = window.frame.size
+        let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let margin: CGFloat = 8
+        let gap: CGFloat = 8
+
+        var x = mouse.x - 60
+        var y = mouse.y - size.height - gap
+
+        // 钳制到可见区域内（多显示器 / 靠近屏幕边缘时不会跑出屏幕）
+        if visible.width > size.width + margin * 2 {
+            x = min(max(x, visible.minX + margin), visible.maxX - size.width - margin)
+        } else {
+            x = visible.minX + margin
+        }
+        if visible.height > size.height + margin * 2 {
+            y = min(max(y, visible.minY + margin), visible.maxY - size.height - margin)
+        } else {
+            y = visible.minY + margin
+        }
+        return NSPoint(x: x, y: y)
     }
 
     /// 设置 ESC 键事件监视器
@@ -205,11 +255,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         // 添加新的本地事件监视器
         escKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 { // 53 是 ESC 键的 keyCode
-                self?.window?.close()
-                return nil // 阻止事件继续传递
-            }
-            return event
+            guard let self = self, event.keyCode == 53 else { return event } // 53 是 ESC 键的 keyCode
+            // 有模态面板（NSOpenPanel / NSAlert）时，把 ESC 交还给面板自己处理
+            guard NSApp.modalWindow == nil else { return event }
+            // 只有项目窗口持有键盘焦点时才响应，避免误关其它窗口的输入
+            guard let window = self.window, window.isKeyWindow else { return event }
+            self.hideWindow(window)
+            return nil // 阻止事件继续传递
         }
     }
 
@@ -258,12 +310,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    /// 当窗口失去激活状态时关闭窗口。
+    /// 当窗口失去激活状态时隐藏窗口（保留实例，方便下次复用同一份视图状态）。
     func windowDidResignKey(_ notification: Notification) {
+        // NSOpenPanel 等模态弹窗运行时，不隐藏窗口
+        guard NSApp.modalWindow == nil else { return }
         print("AppDelegate: windowDidResignKey")
-        if let window = notification.object as? NSWindow, window == self.window {
-            window.close()
-        }
+        guard let window = notification.object as? NSWindow, window == self.window else { return }
+        guard window.isVisible else { return } // orderOut 期间可能再次收到通知，避免重入
+        hideWindow(window)
+    }
+
+    /// 点击标题栏关闭按钮时只隐藏窗口，不销毁实例。
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        guard sender == window else { return true }
+        hideWindow(sender)
+        return false
     }
 
     /// 窗口关闭时清除窗口引用和 ESC 键监视器。

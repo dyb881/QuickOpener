@@ -29,3 +29,13 @@
 "spanish" = "スペイン語";
 
 "restart_takes_effect" = "再起動後に反映";
+
+/* Actions & dialogs */
+"add_projects" = "プロジェクトを追加…";
+"remove_application" = "アプリを削除";
+"reset_cache_confirm_title" = "キャッシュをリセットしますか？";
+"reset_cache_confirm_message" = "すべてのプロジェクトと追加したアプリが削除されます。この操作は取り消せません。";
+"button_cancel" = "キャンセル";
+"button_clear" = "消去";
+"restart_failed_title" = "再起動できません";
+"restart_failed_message" = "言語設定を反映するには、QuickOpener を手動で終了して再度開いてください。";

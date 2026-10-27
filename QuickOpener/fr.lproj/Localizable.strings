@@ -29,3 +29,13 @@
 "spanish" = "Espagnol";
 
 "restart_takes_effect" = "Changements appliqués après redémarrage";
+
+/* Actions & dialogs */
+"add_projects" = "Ajouter des projets...";
+"remove_application" = "Supprimer l'app";
+"reset_cache_confirm_title" = "Réinitialiser le cache ?";
+"reset_cache_confirm_message" = "Tous les projets et les apps ajoutées seront supprimés. Cette action est irréversible.";
+"button_cancel" = "Annuler";
+"button_clear" = "Effacer";
+"restart_failed_title" = "Redémarrage impossible";
+"restart_failed_message" = "Quittez et rouvrez QuickOpener manuellement pour appliquer le changement de langue.";

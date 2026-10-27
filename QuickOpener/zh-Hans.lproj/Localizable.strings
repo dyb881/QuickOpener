@@ -29,3 +29,13 @@
 "spanish" = "西班牙语";
 
 "restart_takes_effect" = "重启生效";
+
+/* Actions & dialogs */
+"add_projects" = "添加项目…";
+"remove_application" = "删除应用";
+"reset_cache_confirm_title" = "重置缓存？";
+"reset_cache_confirm_message" = "将清空全部项目和已添加的应用，此操作不可撤销。";
+"button_cancel" = "取消";
+"button_clear" = "清空";
+"restart_failed_title" = "无法自动重启";
+"restart_failed_message" = "请手动退出并重新打开 QuickOpener 使语言设置生效。";

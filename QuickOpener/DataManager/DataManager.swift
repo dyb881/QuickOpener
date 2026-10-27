@@ -25,6 +25,10 @@ class DataManager: ObservableObject {
     /// 过滤文本，用于筛选项目列表。
     @Published var filterText: String = ""
 
+    /// 托管窗口引用，用于 NSOpenPanel 的 Sheet 模态展示。
+    /// 由 AppDelegate 在创建窗口时设置。
+    weak var hostingWindow: NSWindow?
+
     /// 计算属性，返回经过过滤和排序的项目列表，用于 UI 渲染。
     /// - 按 `filterText` 过滤项目名称或路径（忽略大小写）。
     /// - 按权重（`weight`）降序排序。
@@ -110,8 +114,27 @@ class DataManager: ObservableObject {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
 
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        if hostingWindow == nil {
+            print("DataManager: hostingWindow is nil, falling back to runModal")
+        } else if hostingWindow!.isReleasedWhenClosed {
+            print("DataManager: hostingWindow isReleasedWhenClosed=true, falling back to runModal")
+        }
 
+        // 使用 runModal 避免 NSPanel + Sheet 的兼容问题
+        defer { restoreHostingWindowFocus() }
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        print("DataManager: runModal completed OK, url=\(url.path)")
+        handleApplicationPicked(url: url)
+    }
+
+    /// 把键盘焦点还给项目窗口：模态面板关闭后项目窗口通常已不是 key window，
+    /// 不恢复的话 ESC 与文本输入都会失效。
+    private func restoreHostingWindowFocus() {
+        hostingWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    /// 处理用户选择的应用程序 URL（公共逻辑，被 Sheet 和 runModal 两种路径共用）
+    private func handleApplicationPicked(url: URL) {
         let appPath = url.path
         if let existingApp = applications.first(where: { $0.path == appPath }) {
             selectApplication(existingApp)
@@ -125,12 +148,21 @@ class DataManager: ObservableObject {
     }
 
     /// 删除指定的应用程序，从持久化存储和列表中移除。
+    /// - 内置的 Finder 不允许删除。
+    /// - 若删除的是当前选中的应用，自动回退到 Finder。
     /// - Parameter app: 要删除的 `ApplicationModel` 实例。
     func removeApplication(_ app: ApplicationModel) {
         print("DataManager: removeApplication")
+        guard app.path != ApplicationModel.defaultApplication.path else { return }
         modelContext.delete(app)
         try? modelContext.save()
-        applications = applications.filter { $0 != app }
+        applications = applications.filter { $0.path != app.path }
+
+        if currentApplication.path == app.path {
+            let fallback = applications.first(where: { $0.path == ApplicationModel.defaultApplication.path })
+                ?? ApplicationModel.defaultApplication
+            selectApplication(fallback)
+        }
     }
 
     /// 选择指定的应用程序作为当前应用程序，并保存路径到 UserDefaults。
@@ -152,17 +184,34 @@ class DataManager: ObservableObject {
         panel.canChooseDirectories = true
         panel.canChooseFiles = true
 
+        if hostingWindow == nil {
+            print("DataManager: hostingWindow is nil, falling back to runModal")
+        } else if hostingWindow!.isReleasedWhenClosed {
+            print("DataManager: hostingWindow isReleasedWhenClosed=true, falling back to runModal")
+        }
+
+        // 使用 runModal 避免 NSPanel + Sheet 的兼容问题
+        defer { restoreHostingWindowFocus() }
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
+        print("DataManager: runModal completed OK, url count=\(panel.urls.count)")
+        handleProjectsPicked(urls: panel.urls)
+    }
 
+    /// 处理用户选择的项目 URL 列表（公共逻辑，被 Sheet 和 runModal 两种路径共用）
+    private func handleProjectsPicked(urls: [URL]) {
         let existingPaths = Set(projects.map { $0.path })
+        // 以现有最大权重为基准递增，保证新项目一定排在列表最上方且批量添加顺序确定
+        var nextWeight = (projects.map { $0.weight }.max() ?? -1) + 1
 
-        let newProjects = panel.urls
-            .filter { !existingPaths.contains($0.path) }
-            .map { ProjectModel(
-                path: $0.path,
+        var newProjects: [ProjectModel] = []
+        for url in urls where !existingPaths.contains(url.path) {
+            newProjects.append(ProjectModel(
+                path: url.path,
                 applicationPath: currentApplication.path,
-                weight: projects.isEmpty ? 0 : projects[0].weight + 1
-            ) }
+                weight: nextWeight
+            ))
+            nextWeight += 1
+        }
 
         guard !newProjects.isEmpty else { return }
 

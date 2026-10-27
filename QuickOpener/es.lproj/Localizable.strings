@@ -14,7 +14,7 @@
 "menu_show_window" = "Mostrar ventana";
 "menu_reset_cache" = "Restablecer caché";
 "menu_quit" = "Salir";
-"menu_settings" = "Preferencias...";}
+"menu_settings" = "Preferencias...";
 
 "settings_language" = "Idioma";
 "label_language" = "Seleccionar idioma";
@@ -29,3 +29,13 @@
 "spanish" = "Español";
 
 "restart_takes_effect" = "Los cambios se aplicarán al reiniciar";
+
+/* Actions & dialogs */
+"add_projects" = "Agregar proyectos...";
+"remove_application" = "Eliminar app";
+"reset_cache_confirm_title" = "¿Restablecer caché?";
+"reset_cache_confirm_message" = "Se eliminarán todos los proyectos y las apps agregadas. Esta acción no se puede deshacer.";
+"button_cancel" = "Cancelar";
+"button_clear" = "Borrar";
+"restart_failed_title" = "No se puede reiniciar";
+"restart_failed_message" = "Salga y vuelva a abrir QuickOpener manualmente para aplicar el cambio de idioma.";

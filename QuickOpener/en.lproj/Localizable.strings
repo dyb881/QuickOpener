@@ -29,3 +29,13 @@
 "spanish" = "Spanish";
 
 "restart_takes_effect" = "Changes will take effect after restart";
+
+/* Actions & dialogs */
+"add_projects" = "Add Projects...";
+"remove_application" = "Remove Application";
+"reset_cache_confirm_title" = "Reset Cache?";
+"reset_cache_confirm_message" = "All projects and added applications will be deleted. This cannot be undone.";
+"button_cancel" = "Cancel";
+"button_clear" = "Clear";
+"restart_failed_title" = "Unable to Restart";
+"restart_failed_message" = "Please quit and reopen QuickOpener manually to apply the language change.";
