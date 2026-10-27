@@ -47,6 +47,15 @@ open QuickOpener.xcodeproj
 open -a Xcode QuickOpener.xcodeproj
 ```
 
+## 测试
+
+```bash
+# 运行单元测试（QuickOpenerTests，使用内存 ModelContainer，不触碰真实数据）
+xcodebuild test -project QuickOpener.xcodeproj -scheme QuickOpener -destination 'platform=macOS'
+```
+
+覆盖：默认应用播种、项目权重递增、重复路径去重、时间衰减排序、删除应用后的引用回退、Finder 保护、JSON 导入导出、选中索引越界、清空缓存。
+
 如果需要在命令行构建：
 
 ```bash

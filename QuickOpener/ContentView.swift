@@ -111,9 +111,9 @@ struct ContentView: View {
                 Label(LocalizedStringKey("add_application"), systemImage: "app.badge.plus")
             }
 
-            if dataManager.applications.contains(where: { $0.path != ApplicationModel.defaultApplication.path }) {
+            if dataManager.applications.contains(where: { $0.path != ApplicationModel.defaultApplicationPath }) {
                 Menu {
-                    ForEach(dataManager.applications.filter { $0.path != ApplicationModel.defaultApplication.path }, id: \.path) { app in
+                    ForEach(dataManager.applications.filter { $0.path != ApplicationModel.defaultApplicationPath }, id: \.path) { app in
                         Button(role: .destructive) {
                             dataManager.removeApplication(app) // 删除已添加的应用（内置 Finder 不可删）
                         } label: {

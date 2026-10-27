@@ -79,6 +79,10 @@ class DataManager: ObservableObject {
             .map { $0.project }
     }
 
+    /// 强引用模型容器：ModelContext 不会保活它的 container，
+    /// container 一旦释放，context 会被 reset，所有模型实例的 backing 都会失效。
+    private let container: ModelContainer
+
     /// SwiftData 的模型上下文，用于持久化数据操作。
     private let modelContext: ModelContext
 
@@ -88,6 +92,7 @@ class DataManager: ObservableObject {
     /// - 确保默认的 Finder 应用程序存在于应用程序列表中。
     /// - 从 UserDefaults 加载当前应用程序路径，若无则使用默认 Finder。
     init(modelContext: ModelContext) {
+        container = modelContext.container
         self.modelContext = modelContext
 
         // 初始化存储属性
@@ -103,9 +108,9 @@ class DataManager: ObservableObject {
         }
 
         // 确保默认的 Finder 应用程序存在
-        if initialApplications.isEmpty || !initialApplications.contains(where: { $0.path == ApplicationModel.defaultApplication.path }) {
+        if initialApplications.isEmpty || !initialApplications.contains(where: { $0.path == ApplicationModel.defaultApplicationPath }) {
             // 每次新建实例：static 单例重复 insert 到不同 ModelContext 会出问题（如 Preview）
-            let defaultApp = ApplicationModel(path: ApplicationModel.defaultApplication.path)
+            let defaultApp = ApplicationModel(path: ApplicationModel.defaultApplicationPath)
             modelContext.insert(defaultApp)
             initialApplications.append(defaultApp)
             try? modelContext.save()
@@ -114,8 +119,8 @@ class DataManager: ObservableObject {
         // 确定初始的当前应用程序
         let savedPath = UserDefaults.standard.string(forKey: "currentApplicationPath")
         let initialCurrentApp = initialApplications.first(where: { $0.path == savedPath }) ??
-            initialApplications.first(where: { $0.path == ApplicationModel.defaultApplication.path }) ??
-            ApplicationModel.defaultApplication
+            initialApplications.first(where: { $0.path == ApplicationModel.defaultApplicationPath }) ??
+            initialApplications[0] // 上面已保证至少插入了一个 Finder
 
         // 初始化所有 @Published 属性
         projects = initialProjects
@@ -187,7 +192,7 @@ class DataManager: ObservableObject {
         filterText = "" // 否则重置后过滤词仍在，列表看着还是空的
 
         // 重建默认 Finder 并写回存储，避免内存实例与数据库不一致
-        let defaultApp = ApplicationModel(path: ApplicationModel.defaultApplication.path)
+        let defaultApp = ApplicationModel(path: ApplicationModel.defaultApplicationPath)
         modelContext.insert(defaultApp)
         try? modelContext.save()
 
@@ -256,23 +261,27 @@ class DataManager: ObservableObject {
     /// - Parameter app: 要删除的 `ApplicationModel` 实例。
     func removeApplication(_ app: ApplicationModel) {
         print("DataManager: removeApplication")
-        guard app.path != ApplicationModel.defaultApplication.path else { return }
+        let removedPath = app.path // 先取出：delete + save 之后访问被删模型属性会崩
+        guard removedPath != ApplicationModel.defaultApplicationPath else { return }
 
-        let fallback = applications.first(where: { $0.path == ApplicationModel.defaultApplication.path })
-            ?? ApplicationModel(path: ApplicationModel.defaultApplication.path)
+        let fallback = applications.first(where: { $0.path == ApplicationModel.defaultApplicationPath })
+            ?? ApplicationModel(path: ApplicationModel.defaultApplicationPath)
 
         // 先把引用该应用的项目改回 Finder，再删除应用，避免悬空 applicationPath
-        let affectedProjects = projects.filter { $0.applicationPath == app.path }
+        let affectedProjects = projects.filter { $0.applicationPath == removedPath }
         if !affectedProjects.isEmpty {
             print("DataManager: \(affectedProjects.count) 个项目回退到 Finder")
             affectedProjects.forEach { $0.applicationPath = fallback.path }
         }
 
+        // 先从内存数组移除（此时模型仍有效），再删库，最后才可能访问剩余对象
+        let wasCurrent = currentApplication.path == removedPath
+        applications = applications.filter { $0.path != removedPath }
+
         modelContext.delete(app)
         try? modelContext.save()
-        applications = applications.filter { $0.path != app.path }
 
-        if currentApplication.path == app.path {
+        if wasCurrent {
             selectApplication(fallback)
         }
     }
@@ -314,6 +323,16 @@ class DataManager: ObservableObject {
         guard project.applicationPath != path else { return }
         project.applicationPath = path
         try? modelContext.save()
+    }
+
+    /// 直接添加一批 URL（内部/测试入口，不弹文件面板）。
+    func addProjects(urls: [URL]) {
+        handleProjectsPicked(urls: urls)
+    }
+
+    /// 直接添加一个应用（内部/测试入口，不弹文件面板）。
+    func addApplication(path: String) {
+        handleApplicationPicked(url: URL(fileURLWithPath: path))
     }
 
     /// 处理用户选择的项目 URL 列表（公共逻辑，被 Sheet 和 runModal 两种路径共用）
