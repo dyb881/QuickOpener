@@ -36,6 +36,16 @@ class DataManager: ObservableObject {
     /// 只在窗口显示等时机刷新一次，避免每帧对每个项目做文件系统检查。
     @Published private(set) var missingPaths: Set<String> = []
 
+    /// 键盘导航当前选中的行索引（对应 `renderProjects` 的顺序）。
+    @Published var selectedIndex: Int = 0
+
+    /// 当前选中项；索引越界时自动钳制，列表变化后仍然安全。
+    var selectedProject: ProjectModel? {
+        let items = renderProjects
+        guard !items.isEmpty else { return nil }
+        return items[min(max(selectedIndex, 0), items.count - 1)]
+    }
+
     /// 计算属性，返回经过过滤和排序的项目列表，用于 UI 渲染。
     /// - 按 `filterText` 过滤项目名称或路径（忽略大小写）。
     /// - 按权重（`weight`）降序排序。
@@ -107,6 +117,29 @@ class DataManager: ObservableObject {
     /// 隐藏项目窗口。打开项目成功后显式调用，不再依赖窗口失焦的副作用。
     func hideHostingWindow() {
         hostingWindow?.orderOut(nil)
+    }
+
+    /// 上下移动键盘选中项（首尾不循环）。
+    func moveSelection(by delta: Int) {
+        let items = renderProjects
+        guard !items.isEmpty else { return }
+        let current = min(max(selectedIndex, 0), items.count - 1)
+        selectedIndex = min(max(current + delta, 0), items.count - 1)
+    }
+
+    /// 打开当前键盘选中项。
+    func openSelected() {
+        selectedProject?.open()
+    }
+
+    /// 打开指定序号的项（用于 ⌘1~9）。返回是否命中。
+    @discardableResult
+    func openAt(index: Int) -> Bool {
+        let items = renderProjects
+        guard items.indices.contains(index) else { return false }
+        selectedIndex = index
+        items[index].open()
+        return true
     }
 
     /// 清空所有缓存数据，包括项目、应用程序和 UserDefaults 中的当前应用程序路径。

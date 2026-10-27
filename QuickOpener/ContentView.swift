@@ -26,7 +26,7 @@ struct ContentView: View {
         VStack {
             headerControls
                 .padding([.horizontal, .top])
-            projectsList
+            projectsList(selectedPath: dataManager.selectedProject?.path)
         }
         .frame(width: 300, height: 500)
         .alert(
@@ -45,6 +45,9 @@ struct ContentView: View {
             // 窗口每次获得焦点（首次显示或被复用后重新显示）都把光标放进搜索框
             isFilterFocused = true
         }
+        .onChange(of: dataManager.filterText) { _, _ in
+            dataManager.selectedIndex = 0 // 过滤结果变了，选中项回到第一行
+        }
     }
 
     /// 头部控件，包含过滤文本输入框和添加项目按钮。
@@ -52,14 +55,8 @@ struct ContentView: View {
         HStack {
             TextField(LocalizedStringKey("filter_projects"), text: $dataManager.filterText) // 输入框，用于过滤项目列表
                 .focused($isFilterFocused)
-                .onSubmit { openFirstMatch() } // 回车直接打开当前列表第一项
             addProjectButton // 添加项目和应用程序的菜单按钮
         }
-    }
-
-    /// 打开当前（已过滤排序后的）列表第一项。
-    private func openFirstMatch() {
-        dataManager.renderProjects.first?.open()
     }
 
     /// 创建应用程序菜单项，显示应用程序图标和名称。
@@ -169,38 +166,67 @@ struct ContentView: View {
         }
     }
 
-    /// 项目列表视图，显示过滤后的项目，支持点击打开和悬停高亮。
-    private var projectsList: some View {
-        List(dataManager.renderProjects, id: \.path) { item in
-            HStack(spacing: 8) {
-                projectSetting(item) // 项目设置菜单
-                Text(item.name) // 项目名称
-                    .foregroundStyle(dataManager.missingPaths.contains(item.path) ? Color.secondary : Color.primary)
-                if dataManager.missingPaths.contains(item.path) {
-                    Image(systemName: "exclamationmark.triangle.fill") // 文件已被移动或删除
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                        .help(Text(LocalizedStringKey("project_missing_title")))
+    /// 项目列表视图，显示过滤后的项目，支持点击打开、悬停与键盘选中高亮。
+    private func projectsList(selectedPath: String?) -> some View {
+        ScrollViewReader { proxy in
+            List(dataManager.renderProjects, id: \.path) { item in
+                projectRow(item, selectedPath: selectedPath)
+                    .id(item.path)
+            }
+            .onChange(of: selectedPath) { _, newPath in
+                guard let newPath = newPath else { return }
+                // anchor 为 nil：已可见时不滚动，只有超出可视区域才跟随
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    proxy.scrollTo(newPath)
                 }
-                Spacer(minLength: 4)
-                // 用 Button 而不是 onTapGesture：避免与整行的打开手势竞争
-                Button {
-                    dataManager.removeProjects(item) // 删除项目
-                } label: {
-                    Image(systemName: "trash")
-                        .foregroundStyle(hoveredPath == item.path ? Color.secondary : Color.secondary.opacity(0.45))
-                }
-                .buttonStyle(.plain)
             }
-            .contentShape(Rectangle()) // 确保整行可点击
-            .onHover { hovering in
-                hoveredPath = hovering ? item.path : nil // 更新悬停状态
-            }
-            .onTapGesture {
-                item.open() // 点击项目以默认应用程序打开
-            }
-            .listRowBackground(hoveredPath == item.path ? Color.accentColor.opacity(0.1) : Color.clear) // 悬停时高亮背景
         }
+    }
+
+    /// 单行项目视图。
+    private func projectRow(_ item: ProjectModel, selectedPath: String?) -> some View {
+        HStack(spacing: 8) {
+            projectSetting(item) // 项目设置菜单
+            Text(item.name) // 项目名称
+                .foregroundStyle(dataManager.missingPaths.contains(item.path) ? Color.secondary : Color.primary)
+            if dataManager.missingPaths.contains(item.path) {
+                Image(systemName: "exclamationmark.triangle.fill") // 文件已被移动或删除
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .help(Text(LocalizedStringKey("project_missing_title")))
+            }
+            Spacer(minLength: 4)
+            // 用 Button 而不是 onTapGesture：避免与整行的打开手势竞争
+            Button {
+                dataManager.removeProjects(item) // 删除项目
+            } label: {
+                Image(systemName: "trash")
+                    .foregroundStyle(hoveredPath == item.path ? Color.secondary : Color.secondary.opacity(0.45))
+            }
+            .buttonStyle(.plain)
+        }
+        .contentShape(Rectangle()) // 确保整行可点击
+        .onHover { hovering in
+            hoveredPath = hovering ? item.path : nil // 更新悬停状态
+            if hovering, let index = dataManager.renderProjects.firstIndex(where: { $0.path == item.path }) {
+                dataManager.selectedIndex = index // 鼠标悬停与键盘选中保持一致
+            }
+        }
+        .onTapGesture {
+            item.open() // 点击项目以默认应用程序打开
+        }
+        .listRowBackground(rowBackground(for: item, selectedPath: selectedPath))
+    }
+
+    /// 行背景：键盘选中 > 鼠标悬停 > 透明。
+    private func rowBackground(for item: ProjectModel, selectedPath: String?) -> Color {
+        if selectedPath == item.path {
+            return Color.accentColor.opacity(0.18)
+        }
+        if hoveredPath == item.path {
+            return Color.accentColor.opacity(0.08)
+        }
+        return Color.clear
     }
 }
 

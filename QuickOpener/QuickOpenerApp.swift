@@ -60,8 +60,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     /// 菜单栏状态栏项，用于显示应用程序图标和菜单。
     private var statusItem: NSStatusItem?
 
-    /// ESC 键事件监视器
-    private var escKeyMonitor: Any?
+    /// 窗口内键盘事件监视器（ESC / ↑↓ / 回车 / ⌘数字）
+    private var keyMonitor: Any?
 
     /// 应用程序启动完成时调用，设置菜单栏图标、菜单和全局快捷键。
     func applicationDidFinishLaunching(_: Notification) {
@@ -218,8 +218,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         activateWindow(newWindow)
         window = newWindow
 
-        // 注册 ESC 键监听
-        setupEscKeyMonitor()
+        // 注册键盘监听
+        setupKeyMonitor()
     }
 
     /// 将窗口定位到鼠标光标附近。
@@ -254,28 +254,57 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return NSPoint(x: x, y: y)
     }
 
-    /// 设置 ESC 键事件监视器
-    private func setupEscKeyMonitor() {
+    /// 窗口内的键盘监听：ESC 隐藏、↑↓ 选择、回车打开选中项、⌘1~9 直选。
+    private func setupKeyMonitor() {
         // 先移除现有的监视器
-        removeEscKeyMonitor()
+        removeKeyMonitor()
 
         // 添加新的本地事件监视器
-        escKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self = self, event.keyCode == 53 else { return event } // 53 是 ESC 键的 keyCode
-            // 有模态面板（NSOpenPanel / NSAlert）时，把 ESC 交还给面板自己处理
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self else { return event }
+            // 有模态面板（NSOpenPanel / NSAlert）时，把按键交还给面板自己处理
             guard NSApp.modalWindow == nil else { return event }
-            // 只有项目窗口持有键盘焦点时才响应，避免误关其它窗口的输入
-            guard let window = self.window, window.isKeyWindow else { return event }
-            self.hideWindow(window)
-            return nil // 阻止事件继续传递
+            // 只在项目窗口持有键盘焦点时接管，避免影响设置窗口等输入
+            guard let window = self.window, window.isKeyWindow, window.isVisible else { return event }
+
+            let manager = QuickOpenerApp.dataManager
+
+            switch event.keyCode {
+            case 53: // ESC
+                self.hideWindow(window)
+                return nil // 阻止事件继续传递
+            case 125: // ↓
+                manager.moveSelection(by: 1)
+                return nil
+            case 126: // ↑
+                manager.moveSelection(by: -1)
+                return nil
+            case 36, 76: // Return / Enter
+                manager.openSelected()
+                return nil
+            default:
+                break
+            }
+
+            // ⌘1~9 直接打开对应序号的项
+            let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            if flags.contains(.command),
+               flags.intersection([.shift, .option, .control]).isEmpty,
+               let characters = event.charactersIgnoringModifiers,
+               let number = Int(characters), (1 ... 9).contains(number),
+               manager.openAt(index: number - 1) {
+                return nil
+            }
+
+            return event
         }
     }
 
-    /// 移除 ESC 键事件监视器
-    private func removeEscKeyMonitor() {
-        if let monitor = escKeyMonitor {
+    /// 移除键盘监听
+    private func removeKeyMonitor() {
+        if let monitor = keyMonitor {
             NSEvent.removeMonitor(monitor)
-            escKeyMonitor = nil
+            keyMonitor = nil
         }
     }
 
@@ -338,8 +367,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         print("AppDelegate: windowWillClose")
         if let closingWindow = notification.object as? NSWindow {
             if closingWindow == window {
-                // 移除 ESC 键监视器
-                removeEscKeyMonitor()
+                // 移除键盘监听
+                removeKeyMonitor()
                 window = nil
             } else if closingWindow == settingsWindow {
                 settingsWindow = nil
