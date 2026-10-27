@@ -32,6 +32,10 @@ class DataManager: ObservableObject {
     /// 最近一次尝试打开但已不存在的项目，用于在界面上给出提示（不自动删除）。
     @Published var missingProject: ProjectModel?
 
+    /// 已失效（文件被移动或删除）的项目路径集合。
+    /// 只在窗口显示等时机刷新一次，避免每帧对每个项目做文件系统检查。
+    @Published private(set) var missingPaths: Set<String> = []
+
     /// 计算属性，返回经过过滤和排序的项目列表，用于 UI 渲染。
     /// - 按 `filterText` 过滤项目名称或路径（忽略大小写）。
     /// - 按权重（`weight`）降序排序。
@@ -88,6 +92,21 @@ class DataManager: ObservableObject {
         projects = initialProjects
         applications = initialApplications
         currentApplication = initialCurrentApp
+
+        refreshMissingPaths()
+    }
+
+    /// 重新统计失效项目（每个项目一次文件检查，仅在需要时调用）。
+    func refreshMissingPaths() {
+        let missing = Set(projects.filter { !$0.exists }.map { $0.path })
+        if missing != missingPaths {
+            missingPaths = missing
+        }
+    }
+
+    /// 隐藏项目窗口。打开项目成功后显式调用，不再依赖窗口失焦的副作用。
+    func hideHostingWindow() {
+        hostingWindow?.orderOut(nil)
     }
 
     /// 清空所有缓存数据，包括项目、应用程序和 UserDefaults 中的当前应用程序路径。
@@ -111,6 +130,7 @@ class DataManager: ObservableObject {
         applications = [defaultApp]
         currentApplication = defaultApp
         missingProject = nil
+        missingPaths = []
     }
 
     /// 记录一个已不存在的项目，交给界面提示（不静默删除，避免用户以为丢了数据）。
@@ -166,18 +186,28 @@ class DataManager: ObservableObject {
 
     /// 删除指定的应用程序，从持久化存储和列表中移除。
     /// - 内置的 Finder 不允许删除。
+    /// - 绑定到该应用的项目会回退到 Finder，避免之后点击静默失败。
     /// - 若删除的是当前选中的应用，自动回退到 Finder。
     /// - Parameter app: 要删除的 `ApplicationModel` 实例。
     func removeApplication(_ app: ApplicationModel) {
         print("DataManager: removeApplication")
         guard app.path != ApplicationModel.defaultApplication.path else { return }
+
+        let fallback = applications.first(where: { $0.path == ApplicationModel.defaultApplication.path })
+            ?? ApplicationModel(path: ApplicationModel.defaultApplication.path)
+
+        // 先把引用该应用的项目改回 Finder，再删除应用，避免悬空 applicationPath
+        let affectedProjects = projects.filter { $0.applicationPath == app.path }
+        if !affectedProjects.isEmpty {
+            print("DataManager: \(affectedProjects.count) 个项目回退到 Finder")
+            affectedProjects.forEach { $0.applicationPath = fallback.path }
+        }
+
         modelContext.delete(app)
         try? modelContext.save()
         applications = applications.filter { $0.path != app.path }
 
         if currentApplication.path == app.path {
-            let fallback = applications.first(where: { $0.path == ApplicationModel.defaultApplication.path })
-                ?? ApplicationModel.defaultApplication
             selectApplication(fallback)
         }
     }
@@ -235,14 +265,20 @@ class DataManager: ObservableObject {
         newProjects.forEach { modelContext.insert($0) }
         try? modelContext.save()
         projects.append(contentsOf: newProjects)
+        refreshMissingPaths()
     }
 
     /// 删除指定的项目，从持久化存储和项目列表中移除。
     /// - Parameter project: 要删除的 `ProjectModel` 实例。
     func removeProjects(_ project: ProjectModel) {
         print("DataManager: removeProjects")
+        let removedPath = project.path
         modelContext.delete(project)
         try? modelContext.save()
-        projects = projects.filter { $0 != project }
+        projects = projects.filter { $0.path != removedPath }
+        missingPaths.remove(removedPath)
+        if missingProject?.path == removedPath {
+            missingProject = nil
+        }
     }
 }

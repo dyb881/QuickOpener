@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Combine
 import SwiftData
 import SwiftUI
 
@@ -14,8 +15,11 @@ struct ContentView: View {
     /// 环境对象，引用 `DataManager` 来管理项目和应用程序数据。
     @EnvironmentObject private var dataManager: DataManager
 
-    /// 状态变量，跟踪当前鼠标悬停的项目。
-    @State private var hoveredProject: ProjectModel?
+    /// 状态变量，跟踪当前鼠标悬停的项目路径。
+    @State private var hoveredPath: String?
+
+    /// 搜索框焦点：窗口每次显示时自动聚焦，省掉「先用鼠标点输入框」这一步。
+    @FocusState private var isFilterFocused: Bool
 
     /// 视图主体，包含头部控件和项目列表，设置固定窗口大小。
     var body: some View {
@@ -37,14 +41,25 @@ struct ContentView: View {
         } message: { project in
             Text(verbatim: project.path)
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
+            // 窗口每次获得焦点（首次显示或被复用后重新显示）都把光标放进搜索框
+            isFilterFocused = true
+        }
     }
 
     /// 头部控件，包含过滤文本输入框和添加项目按钮。
     private var headerControls: some View {
         HStack {
             TextField(LocalizedStringKey("filter_projects"), text: $dataManager.filterText) // 输入框，用于过滤项目列表
+                .focused($isFilterFocused)
+                .onSubmit { openFirstMatch() } // 回车直接打开当前列表第一项
             addProjectButton // 添加项目和应用程序的菜单按钮
         }
+    }
+
+    /// 打开当前（已过滤排序后的）列表第一项。
+    private func openFirstMatch() {
+        dataManager.renderProjects.first?.open()
     }
 
     /// 创建应用程序菜单项，显示应用程序图标和名称。
@@ -160,8 +175,8 @@ struct ContentView: View {
             HStack(spacing: 8) {
                 projectSetting(item) // 项目设置菜单
                 Text(item.name) // 项目名称
-                    .foregroundStyle(item.exists ? Color.primary : Color.secondary)
-                if !item.exists {
+                    .foregroundStyle(dataManager.missingPaths.contains(item.path) ? Color.secondary : Color.primary)
+                if dataManager.missingPaths.contains(item.path) {
                     Image(systemName: "exclamationmark.triangle.fill") // 文件已被移动或删除
                         .font(.caption)
                         .foregroundStyle(.orange)
@@ -173,18 +188,18 @@ struct ContentView: View {
                     dataManager.removeProjects(item) // 删除项目
                 } label: {
                     Image(systemName: "trash")
-                        .foregroundStyle(hoveredProject == item ? Color.secondary : Color.secondary.opacity(0.45))
+                        .foregroundStyle(hoveredPath == item.path ? Color.secondary : Color.secondary.opacity(0.45))
                 }
                 .buttonStyle(.plain)
             }
             .contentShape(Rectangle()) // 确保整行可点击
             .onHover { hovering in
-                hoveredProject = hovering ? item : nil // 更新悬停状态
+                hoveredPath = hovering ? item.path : nil // 更新悬停状态
             }
             .onTapGesture {
                 item.open() // 点击项目以默认应用程序打开
             }
-            .listRowBackground(hoveredProject == item ? Color.accentColor.opacity(0.1) : Color.clear) // 悬停时高亮背景
+            .listRowBackground(hoveredPath == item.path ? Color.accentColor.opacity(0.1) : Color.clear) // 悬停时高亮背景
         }
     }
 }

@@ -110,6 +110,10 @@ final class ProjectModel: FileCommonDataProtocol {
                 print("打开文件失败: \(error.localizedDescription)")
             } else {
                 print("文件打开成功")
+                // 成功后才隐藏窗口；失败时留着窗口让用户重试
+                Task { @MainActor in
+                    QuickOpenerApp.dataManager.hideHostingWindow()
+                }
             }
 
             // 在打开完成后停止安全作用域访问

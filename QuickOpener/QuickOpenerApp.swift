@@ -137,6 +137,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         print("AppDelegate: showWindow")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            // 每次显示前刷新一次失效项目状态（窗口常驻后文件可能已被移走）
+            QuickOpenerApp.dataManager.refreshMissingPaths()
             if let existingWindow = self.window {
                 self.activateWindow(existingWindow)
                 self.positionWindowAtCursor(existingWindow)
