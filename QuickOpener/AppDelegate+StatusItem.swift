@@ -70,10 +70,10 @@ extension AppDelegate {
         } else {
             let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
             let windowRect = NSRect(
-                x: screenFrame.midX - 250,
-                y: screenFrame.midY - 400,
-                width: 500,
-                height: 300
+                x: screenFrame.midX - 260,
+                y: screenFrame.midY - 280,
+                width: 520,
+                height: 560 // 初始给足高度；sizingOptions 生效后会精确贴合内容
             )
             let newWindow = NSWindow(
                 contentRect: windowRect,
@@ -85,8 +85,10 @@ extension AppDelegate {
                 SettingsView()
                     .modelContainer(QuickOpenerApp.sharedModelContainer)
                     .environmentObject(QuickOpenerApp.dataManager)
-                    .frame(width: 500, height: 300)
+                    .frame(width: 520) // 只固定宽度，高度交给内容决定
             )
+            // 窗口高度跟随内容，避免新增设置分区后被固定高度裁掉
+            hostingController.sizingOptions = .preferredContentSize
             newWindow.contentViewController = hostingController
             newWindow.delegate = self
             newWindow.isReleasedWhenClosed = false
@@ -96,6 +98,10 @@ extension AppDelegate {
             newWindow.title = NSLocalizedString("menu_settings", comment: "Settings window title")
             activateWindow(newWindow)
             settingsWindow = newWindow
+            // 自适应高度生效后再居中，避免窗口位置偏移
+            DispatchQueue.main.async {
+                newWindow.center()
+            }
         }
     }
 }
