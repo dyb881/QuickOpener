@@ -40,3 +40,9 @@
 "restart_failed_title" = "再起動できません";
 "restart_failed_message" = "言語設定を反映するには、QuickOpener を手動で終了して再度開いてください。";
 "project_missing_title" = "ファイルが見つかりません";
+
+/* Context menu */
+"context_reveal_in_finder" = "Finder で表示";
+"context_copy_path" = "パスをコピー";
+"context_set_default_app" = "既定のアプリ";
+"context_remove_from_list" = "リストから削除";

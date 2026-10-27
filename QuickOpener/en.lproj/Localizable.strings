@@ -40,3 +40,9 @@
 "restart_failed_title" = "Unable to Restart";
 "restart_failed_message" = "Please quit and reopen QuickOpener manually to apply the language change.";
 "project_missing_title" = "File Not Found";
+
+/* Context menu */
+"context_reveal_in_finder" = "Reveal in Finder";
+"context_copy_path" = "Copy Path";
+"context_set_default_app" = "Default Application";
+"context_remove_from_list" = "Remove from List";

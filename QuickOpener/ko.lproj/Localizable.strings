@@ -40,3 +40,9 @@
 "restart_failed_title" = "다시 시작할 수 없음";
 "restart_failed_message" = "언어 설정을 적용하려면 QuickOpener를 직접 종료한 후 다시 실행하세요.";
 "project_missing_title" = "파일을 찾을 수 없습니다";
+
+/* Context menu */
+"context_reveal_in_finder" = "Finder에서 보기";
+"context_copy_path" = "경로 복사";
+"context_set_default_app" = "기본 앱";
+"context_remove_from_list" = "목록에서 제거";

@@ -40,3 +40,9 @@
 "restart_failed_title" = "Redémarrage impossible";
 "restart_failed_message" = "Quittez et rouvrez QuickOpener manuellement pour appliquer le changement de langue.";
 "project_missing_title" = "Fichier introuvable";
+
+/* Context menu */
+"context_reveal_in_finder" = "Afficher dans le Finder";
+"context_copy_path" = "Copier le chemin";
+"context_set_default_app" = "App par défaut";
+"context_remove_from_list" = "Retirer de la liste";

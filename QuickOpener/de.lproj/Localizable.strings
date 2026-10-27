@@ -40,3 +40,9 @@
 "restart_failed_title" = "Neustart nicht möglich";
 "restart_failed_message" = "Bitte beenden und öffnen Sie QuickOpener manuell, um die Sprachänderung anzuwenden.";
 "project_missing_title" = "Datei nicht gefunden";
+
+/* Context menu */
+"context_reveal_in_finder" = "Im Finder anzeigen";
+"context_copy_path" = "Pfad kopieren";
+"context_set_default_app" = "Standard-App";
+"context_remove_from_list" = "Aus Liste entfernen";

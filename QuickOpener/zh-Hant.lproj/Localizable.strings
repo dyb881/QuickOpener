@@ -40,3 +40,9 @@
 "restart_failed_title" = "無法自動重啟";
 "restart_failed_message" = "請手動退出並重新開啟 QuickOpener 使語言設定生效。";
 "project_missing_title" = "檔案不存在";
+
+/* Context menu */
+"context_reveal_in_finder" = "在 Finder 中顯示";
+"context_copy_path" = "複製路徑";
+"context_set_default_app" = "預設開啟方式";
+"context_remove_from_list" = "從列表移除";

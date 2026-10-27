@@ -277,6 +277,20 @@ class DataManager: ObservableObject {
         handleProjectsPicked(urls: panel.urls)
     }
 
+    /// 直接添加一批 URL（拖拽入口）；已存在的路径会被跳过。
+    func addProjects(from urls: [URL]) {
+        print("DataManager: addProjects(from:) count=\(urls.count)")
+        guard !urls.isEmpty else { return }
+        handleProjectsPicked(urls: urls)
+    }
+
+    /// 修改项目的默认打开应用并持久化。
+    func setApplicationPath(_ path: String, for project: ProjectModel) {
+        guard project.applicationPath != path else { return }
+        project.applicationPath = path
+        try? modelContext.save()
+    }
+
     /// 处理用户选择的项目 URL 列表（公共逻辑，被 Sheet 和 runModal 两种路径共用）
     private func handleProjectsPicked(urls: [URL]) {
         let existingPaths = Set(projects.map { $0.path })
