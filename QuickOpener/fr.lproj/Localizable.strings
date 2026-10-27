@@ -46,3 +46,8 @@
 "context_copy_path" = "Copier le chemin";
 "context_set_default_app" = "App par défaut";
 "context_remove_from_list" = "Retirer de la liste";
+
+/* Empty state */
+"empty_state_title" = "Aucun projet";
+"empty_state_hint" = "Cliquez sur « + » en haut à droite pour ajouter des fichiers ou dossiers";
+"no_match_hint" = "Aucun projet correspondant";

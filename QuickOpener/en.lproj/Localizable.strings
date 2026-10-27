@@ -46,3 +46,8 @@
 "context_copy_path" = "Copy Path";
 "context_set_default_app" = "Default Application";
 "context_remove_from_list" = "Remove from List";
+
+/* Empty state */
+"empty_state_title" = "No projects yet";
+"empty_state_hint" = "Click “+” in the top right to add files or folders";
+"no_match_hint" = "No matching projects";

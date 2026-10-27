@@ -46,3 +46,8 @@
 "context_copy_path" = "パスをコピー";
 "context_set_default_app" = "既定のアプリ";
 "context_remove_from_list" = "リストから削除";
+
+/* Empty state */
+"empty_state_title" = "プロジェクトがありません";
+"empty_state_hint" = "右上の「+」からファイルやフォルダを追加してください";
+"no_match_hint" = "一致するプロジェクトがありません";

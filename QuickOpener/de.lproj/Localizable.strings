@@ -46,3 +46,8 @@
 "context_copy_path" = "Pfad kopieren";
 "context_set_default_app" = "Standard-App";
 "context_remove_from_list" = "Aus Liste entfernen";
+
+/* Empty state */
+"empty_state_title" = "Noch keine Projekte";
+"empty_state_hint" = "Klicke oben rechts auf „+“, um Dateien oder Ordner hinzuzufügen";
+"no_match_hint" = "Keine passenden Projekte";

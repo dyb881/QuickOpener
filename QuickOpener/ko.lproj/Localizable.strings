@@ -46,3 +46,10 @@
 "context_copy_path" = "경로 복사";
 "context_set_default_app" = "기본 앱";
 "context_remove_from_list" = "목록에서 제거";
+
+/* Empty state */
+
+/* Empty state */
+"empty_state_title" = "프로젝트가 없습니다";
+"empty_state_hint" = "오른쪽 위 + 버튼을 눌러 파일이나 폴더를 추가하세요";
+"no_match_hint" = "일치하는 프로젝트가 없습니다";

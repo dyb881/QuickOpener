@@ -46,3 +46,8 @@
 "context_copy_path" = "複製路徑";
 "context_set_default_app" = "預設開啟方式";
 "context_remove_from_list" = "從列表移除";
+
+/* Empty state */
+"empty_state_title" = "還沒有專案";
+"empty_state_hint" = "點擊右上角「+」新增檔案或資料夾";
+"no_match_hint" = "沒有符合的專案";

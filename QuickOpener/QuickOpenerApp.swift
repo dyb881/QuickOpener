@@ -63,6 +63,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     /// 窗口内键盘事件监视器（ESC / ↑↓ / 回车 / ⌘数字）
     private var keyMonitor: Any?
 
+    /// 标题栏快捷键提示标签（随快捷键设置更新）
+    private var shortcutLabel: NSTextField?
+
+    /// 快捷键变化通知的观察者
+    private var shortcutObserver: NSObjectProtocol?
+
     /// 应用程序启动完成时调用，设置菜单栏图标、菜单和全局快捷键。
     func applicationDidFinishLaunching(_: Notification) {
         // 设置菜单栏图标
@@ -99,6 +105,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // 注册全局快捷键
         KeyboardShortcuts.onKeyDown(for: .toggleProjectOpener) { [weak self] in
             self?.toggleWindow() // 触发显示/隐藏窗口
+        }
+
+        // 快捷键被修改后，同步刷新标题栏上的提示（库内部使用这个通知名）
+        shortcutObserver = NotificationCenter.default.addObserver(
+            forName: Notification.Name("KeyboardShortcuts_shortcutByNameDidChange"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            // queue: .main 保证在主线程，直接断言到 MainActor，避免 Task 捕获警告
+            MainActor.assumeIsolated {
+                self?.updateShortcutLabel()
+            }
         }
 
         // 仅首次运行时自动显示窗口；之后静默启动，避免每次登录自启都弹窗
@@ -139,6 +157,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             guard let self = self else { return }
             // 每次显示前刷新一次失效项目状态（窗口常驻后文件可能已被移走）
             QuickOpenerApp.dataManager.refreshMissingPaths()
+            self.updateShortcutLabel()
             if let existingWindow = self.window {
                 self.activateWindow(existingWindow)
                 self.positionWindowAtCursor(existingWindow)
@@ -165,6 +184,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private func hideWindow(_ window: NSWindow) {
         print("AppDelegate: hideWindow")
         window.orderOut(nil)
+    }
+
+    /// 刷新标题栏上的快捷键提示，跟随设置里录制的结果。
+    @MainActor
+    private func updateShortcutLabel() {
+        let shortcut = KeyboardShortcuts.getShortcut(for: .toggleProjectOpener)
+        shortcutLabel?.stringValue = shortcut?.description ?? ""
     }
 
     /// 激活现有窗口并将其置于前台。
@@ -204,14 +230,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         QuickOpenerApp.dataManager.hostingWindow = newWindow
 
         let controller = NSTitlebarAccessoryViewController()
-        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 60, height: 24)) // 调整容器大小
-        let textField = NSTextField(labelWithString: "⌥ + Z")
+        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 90, height: 24)) // 容纳最长组合键提示
+        let textField = NSTextField(labelWithString: "")
         textField.alignment = .center // 文本居中
+        textField.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+        textField.textColor = .secondaryLabelColor
         textField.frame = containerView.bounds // 使用 containerView 的边界
         containerView.addSubview(textField)
         controller.view = containerView
         controller.layoutAttribute = .trailing
         newWindow.addTitlebarAccessoryViewController(controller)
+        shortcutLabel = textField
+        updateShortcutLabel()
 
         // 先按鼠标位置定位，再激活显示，避免窗口先在屏幕角落闪一下
         newWindow.setFrameOrigin(targetOrigin(for: newWindow, mouse: NSEvent.mouseLocation))

@@ -168,24 +168,72 @@ struct ContentView: View {
 
     /// 项目列表视图，显示过滤后的项目，支持点击打开、悬停与键盘选中高亮。
     private func projectsList(selectedPath: String?) -> some View {
-        ScrollViewReader { proxy in
-            List(dataManager.renderProjects, id: \.path) { item in
-                projectRow(item, selectedPath: selectedPath)
-                    .id(item.path)
-            }
-            .onChange(of: selectedPath) { _, newPath in
-                guard let newPath = newPath else { return }
-                // anchor 为 nil：已可见时不滚动，只有超出可视区域才跟随
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    proxy.scrollTo(newPath)
+        Group {
+            if dataManager.renderProjects.isEmpty {
+                if dataManager.projects.isEmpty {
+                    emptyState
+                } else {
+                    noMatchState
+                }
+            } else {
+                ScrollViewReader { proxy in
+                    List(dataManager.renderProjects, id: \.path) { item in
+                        projectRow(item, selectedPath: selectedPath)
+                            .id(item.path)
+                    }
+                    .onChange(of: selectedPath) { _, newPath in
+                        guard let newPath = newPath else { return }
+                        // anchor 为 nil：已可见时不滚动，只有超出可视区域才跟随
+                        withAnimation(.easeInOut(duration: 0.1)) {
+                            proxy.scrollTo(newPath)
+                        }
+                    }
                 }
             }
         }
     }
 
+    /// 一条项目都没有时的引导。
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "tray")
+                .font(.system(size: 30, weight: .light))
+                .foregroundStyle(.tertiary)
+            Text(LocalizedStringKey("empty_state_title"))
+                .font(.headline)
+            Text(LocalizedStringKey("empty_state_hint"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            Button {
+                dataManager.addProjects()
+            } label: {
+                Label(LocalizedStringKey("add_projects"), systemImage: "plus")
+            }
+            .controlSize(.small)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 24)
+    }
+
+    /// 有项目但过滤无结果。
+    private var noMatchState: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 24, weight: .light))
+                .foregroundStyle(.tertiary)
+            Text(LocalizedStringKey("no_match_hint"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
     /// 单行项目视图。
     private func projectRow(_ item: ProjectModel, selectedPath: String?) -> some View {
-        HStack(spacing: 8) {
+        let isActive = selectedPath == item.path || hoveredPath == item.path
+        return HStack(spacing: 8) {
             projectSetting(item) // 项目设置菜单
             Text(item.name) // 项目名称
                 .foregroundStyle(dataManager.missingPaths.contains(item.path) ? Color.secondary : Color.primary)
@@ -201,9 +249,12 @@ struct ContentView: View {
                 dataManager.removeProjects(item) // 删除项目
             } label: {
                 Image(systemName: "trash")
-                    .foregroundStyle(hoveredPath == item.path ? Color.secondary : Color.secondary.opacity(0.45))
+                    .foregroundStyle(.secondary)
             }
             .buttonStyle(.plain)
+            .opacity(isActive ? 1 : 0) // 只在悬停/选中时出现，降低误删
+            .allowsHitTesting(isActive)
+            .animation(.easeInOut(duration: 0.12), value: isActive)
         }
         .contentShape(Rectangle()) // 确保整行可点击
         .onHover { hovering in
