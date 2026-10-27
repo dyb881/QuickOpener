@@ -16,9 +16,11 @@ QuickOpener 是一个 macOS 菜单栏应用，用于快速打开项目或文件�
 
 ## 实现映射（快速定位代码）
 
-- 应用入口 / 菜单栏 / 窗口管理：`QuickOpenerApp.swift`（包含 `AppDelegate`）
+- 应用入口 / 窗口管理：`QuickOpenerApp.swift`
+- 菜单栏图标、菜单与设置窗口：`AppDelegate+StatusItem.swift`
+- 快捷键注册与键盘监听（↑↓ / Enter / ⌘1~9 / Esc）：`AppDelegate+Keyboard.swift`
 - 主界面（项目列表、过滤、打开、上下文菜单）：`ContentView.swift`
-- 设置界面（语言、快捷键）：`SettingsView.swift`
+- 设置界面（登录项、语言、快捷键、数据导入导出）：`SettingsView.swift`
 - 数据管理（加载/保存/增删项目与应用、缓存重置）：`DataManager/DataManager.swift`
 - 模型：
   - `DataManager/ApplicationModel.swift`（ApplicationModel）
