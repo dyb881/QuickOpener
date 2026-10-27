@@ -46,3 +46,4 @@
 "context_copy_path" = "Pfad kopieren";
 "context_set_default_app" = "Standard-App";
 "context_remove_from_list" = "Aus Liste entfernen";
+"notice_application_added" = "%@ ist jetzt die aktuelle App";

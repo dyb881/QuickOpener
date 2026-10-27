@@ -46,3 +46,4 @@
 "context_copy_path" = "パスをコピー";
 "context_set_default_app" = "既定のアプリ";
 "context_remove_from_list" = "リストから削除";
+"notice_application_added" = "「%@」を現在のアプリに設定しました";

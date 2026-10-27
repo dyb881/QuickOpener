@@ -39,6 +39,9 @@ class DataManager: ObservableObject {
     /// 键盘导航当前选中的行索引（对应 `renderProjects` 的顺序）。
     @Published var selectedIndex: Int = 0
 
+    /// 短暂的操作提示（拖入 .app 等无列表变化的操作给出反馈）。
+    @Published var notice: String?
+
     /// 当前选中项；索引越界时自动钳制，列表变化后仍然安全。
     var selectedProject: ProjectModel? {
         let items = renderProjects
@@ -277,11 +280,38 @@ class DataManager: ObservableObject {
         handleProjectsPicked(urls: panel.urls)
     }
 
-    /// 直接添加一批 URL（拖拽入口）；已存在的路径会被跳过。
-    func addProjects(from urls: [URL]) {
-        print("DataManager: addProjects(from:) count=\(urls.count)")
+    /// 直接添加一批 URL（拖拽入口）：`.app` 走「添加应用」，其余走「添加项目」。
+    /// 先处理应用，让同批拖入的项目继承新的当前应用。
+    func addDroppedItems(_ urls: [URL]) {
         guard !urls.isEmpty else { return }
-        handleProjectsPicked(urls: urls)
+        print("DataManager: addDroppedItems count=\(urls.count)")
+
+        let isApplication: (URL) -> Bool = { $0.pathExtension.lowercased() == "app" }
+        let applicationURLs = urls.filter(isApplication)
+        let projectURLs = urls.filter { !isApplication($0) }
+
+        for url in applicationURLs {
+            handleApplicationPicked(url: url)
+            showNotice(String(
+                format: NSLocalizedString("notice_application_added", comment: "Application added by drag and drop"),
+                url.deletingPathExtension().lastPathComponent
+            ))
+        }
+
+        if !projectURLs.isEmpty {
+            handleProjectsPicked(urls: projectURLs)
+        }
+    }
+
+    /// 短暂的操作提示（2.5 秒后自动消失）。
+    func showNotice(_ message: String) {
+        notice = message
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_500_000_000)
+            if notice == message {
+                notice = nil
+            }
+        }
     }
 
     /// 修改项目的默认打开应用并持久化。

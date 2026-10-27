@@ -38,6 +38,19 @@ struct ContentView: View {
                 .strokeBorder(Color.accentColor, lineWidth: isDropTargeted ? 2 : 0)
                 .allowsHitTesting(false) // 不能挡住拖放命中
         )
+        .overlay(alignment: .bottom) {
+            if let notice = dataManager.notice {
+                Text(notice)
+                    .font(.caption)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.regularMaterial, in: Capsule())
+                    .padding(.bottom, 10)
+                    .allowsHitTesting(false)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: dataManager.notice)
         .onDrop(of: [UTType.fileURL], isTargeted: $isDropTargeted) { providers in
             handleDrop(providers)
         }
@@ -90,7 +103,7 @@ struct ContentView: View {
 
         group.notify(queue: .main) {
             guard !urls.isEmpty else { return }
-            dataManager.addProjects(from: urls)
+            dataManager.addDroppedItems(urls)
         }
         return true
     }

@@ -46,3 +46,4 @@
 "context_copy_path" = "경로 복사";
 "context_set_default_app" = "기본 앱";
 "context_remove_from_list" = "목록에서 제거";
+"notice_application_added" = "%@ 앱을 현재 앱으로 설정했습니다";
