@@ -46,4 +46,3 @@
 "context_copy_path" = "Copy Path";
 "context_set_default_app" = "Default Application";
 "context_remove_from_list" = "Remove from List";
-"notice_application_added" = "%@ is now the current application";

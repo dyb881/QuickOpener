@@ -46,4 +46,3 @@
 "context_copy_path" = "複製路徑";
 "context_set_default_app" = "預設開啟方式";
 "context_remove_from_list" = "從列表移除";
-"notice_application_added" = "已將「%@」設為當前應用";

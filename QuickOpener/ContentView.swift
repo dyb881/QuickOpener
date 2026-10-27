@@ -9,7 +9,6 @@ import AppKit
 import Combine
 import SwiftData
 import SwiftUI
-internal import UniformTypeIdentifiers
 
 /// 主视图，显示项目列表和应用程序选择控件，用于管理文件和打开方式。
 struct ContentView: View {
@@ -22,9 +21,6 @@ struct ContentView: View {
     /// 搜索框焦点：窗口每次显示时自动聚焦，省掉「先用鼠标点输入框」这一步。
     @FocusState private var isFilterFocused: Bool
 
-    /// 是否有文件正被拖到窗口上（用于显示接收高亮）。
-    @State private var isDropTargeted = false
-
     /// 视图主体，包含头部控件和项目列表，设置固定窗口大小。
     var body: some View {
         VStack {
@@ -33,27 +29,6 @@ struct ContentView: View {
             projectsList(selectedPath: dataManager.selectedProject?.path)
         }
         .frame(width: 300, height: 500)
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .strokeBorder(Color.accentColor, lineWidth: isDropTargeted ? 2 : 0)
-                .allowsHitTesting(false) // 不能挡住拖放命中
-        )
-        .overlay(alignment: .bottom) {
-            if let notice = dataManager.notice {
-                Text(notice)
-                    .font(.caption)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(.regularMaterial, in: Capsule())
-                    .padding(.bottom, 10)
-                    .allowsHitTesting(false)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-        }
-        .animation(.easeInOut(duration: 0.2), value: dataManager.notice)
-        .onDrop(of: [UTType.fileURL], isTargeted: $isDropTargeted) { providers in
-            handleDrop(providers)
-        }
         .alert(
             LocalizedStringKey("project_missing_title"),
             isPresented: Binding(
@@ -73,39 +48,6 @@ struct ContentView: View {
         .onChange(of: dataManager.filterText) { _, _ in
             dataManager.selectedIndex = 0 // 过滤结果变了，选中项回到第一行
         }
-    }
-
-    /// 接收从 Finder 拖入的文件/文件夹，异步解析成 URL 后加入列表。
-    private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
-        let fileProviders = providers.filter { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }
-        guard !fileProviders.isEmpty else { return false }
-
-        let group = DispatchGroup()
-        let lock = NSLock()
-        var urls: [URL] = []
-
-        for provider in fileProviders {
-            group.enter()
-            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
-                defer { group.leave() }
-                let resolved: URL?
-                if let data = item as? Data {
-                    resolved = URL(dataRepresentation: data, relativeTo: nil)
-                } else {
-                    resolved = item as? URL
-                }
-                guard let url = resolved else { return }
-                lock.lock()
-                urls.append(url)
-                lock.unlock()
-            }
-        }
-
-        group.notify(queue: .main) {
-            guard !urls.isEmpty else { return }
-            dataManager.addDroppedItems(urls)
-        }
-        return true
     }
 
     /// 头部控件，包含过滤文本输入框和添加项目按钮。
