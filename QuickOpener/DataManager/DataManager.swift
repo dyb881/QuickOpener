@@ -29,6 +29,9 @@ class DataManager: ObservableObject {
     /// 由 AppDelegate 在创建窗口时设置。
     weak var hostingWindow: NSWindow?
 
+    /// 最近一次尝试打开但已不存在的项目，用于在界面上给出提示（不自动删除）。
+    @Published var missingProject: ProjectModel?
+
     /// 计算属性，返回经过过滤和排序的项目列表，用于 UI 渲染。
     /// - 按 `filterText` 过滤项目名称或路径（忽略大小写）。
     /// - 按权重（`weight`）降序排序。
@@ -68,7 +71,8 @@ class DataManager: ObservableObject {
 
         // 确保默认的 Finder 应用程序存在
         if initialApplications.isEmpty || !initialApplications.contains(where: { $0.path == ApplicationModel.defaultApplication.path }) {
-            let defaultApp = ApplicationModel.defaultApplication
+            // 每次新建实例：static 单例重复 insert 到不同 ModelContext 会出问题（如 Preview）
+            let defaultApp = ApplicationModel(path: ApplicationModel.defaultApplication.path)
             modelContext.insert(defaultApp)
             initialApplications.append(defaultApp)
             try? modelContext.save()
@@ -88,7 +92,7 @@ class DataManager: ObservableObject {
 
     /// 清空所有缓存数据，包括项目、应用程序和 UserDefaults 中的当前应用程序路径。
     /// - 删除所有持久化的 `ProjectModel` 和 `ApplicationModel`。
-    /// - 重置列表为默认值（空项目列表和默认 Finder 应用程序）。
+    /// - 重置列表为默认值（空项目列表和默认 Finder 应用程序），同时清空过滤词。
     func clearCache() {
         print("DataManager: clearCache")
         try? modelContext.delete(model: ProjectModel.self)
@@ -96,10 +100,23 @@ class DataManager: ObservableObject {
         try? modelContext.save()
 
         UserDefaults.standard.removeObject(forKey: "currentApplicationPath")
+        filterText = "" // 否则重置后过滤词仍在，列表看着还是空的
+
+        // 重建默认 Finder 并写回存储，避免内存实例与数据库不一致
+        let defaultApp = ApplicationModel(path: ApplicationModel.defaultApplication.path)
+        modelContext.insert(defaultApp)
+        try? modelContext.save()
 
         projects = []
-        applications = [ApplicationModel.defaultApplication]
-        currentApplication = ApplicationModel.defaultApplication
+        applications = [defaultApp]
+        currentApplication = defaultApp
+        missingProject = nil
+    }
+
+    /// 记录一个已不存在的项目，交给界面提示（不静默删除，避免用户以为丢了数据）。
+    func reportMissingProject(_ project: ProjectModel) {
+        print("DataManager: project missing -> \(project.path)")
+        missingProject = project
     }
 
     /// 添加新应用程序，通过文件选择面板选择 .app 文件。

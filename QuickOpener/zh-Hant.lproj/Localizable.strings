@@ -39,3 +39,4 @@
 "button_clear" = "清空";
 "restart_failed_title" = "無法自動重啟";
 "restart_failed_message" = "請手動退出並重新開啟 QuickOpener 使語言設定生效。";
+"project_missing_title" = "檔案不存在";

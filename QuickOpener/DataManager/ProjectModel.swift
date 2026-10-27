@@ -76,13 +76,14 @@ final class ProjectModel: FileCommonDataProtocol {
 
     /// 使用指定或当前关联的应用程序打开项目文件，并增加权重计数。
     ///
-    /// 如果文件不存在，将从数据管理器中移除该项目。
+    /// 文件不存在时不再静默删除项目，而是交给界面提示，避免用户以为数据丢了。
     /// 调用 `NSWorkspace.shared.open(_:withApplicationAt:configuration:)` 启动应用程序打开文件。
     /// - Parameter newApplicationPath: 可选参数，用于替换当前关联的 `ApplicationModel`。
+    @MainActor
     func open(_ newApplicationPath: String? = nil) {
-        // 检查文件是否存在，不存在则移除项目
-        if !exists {
-            QuickOpenerApp.dataManager.removeProjects(self)
+        // 文件不存在：提示用户，保留记录（不再静默移除）
+        guard exists else {
+            QuickOpenerApp.dataManager.reportMissingProject(self)
             return
         }
 
@@ -94,30 +95,26 @@ final class ProjectModel: FileCommonDataProtocol {
         // 增加权重计数
         weight += 1
 
-        // 优先使用 bookmarkURL
-        let urlToUse = bookmarkURL ?? url
-        
-        // 开始安全作用域访问
-        var accessGranted = false
-        if let bookmarkURL = bookmarkURL {
-            accessGranted = bookmarkURL.startAccessingSecurityScopedResource()
-            print("安全作用域访问: \(accessGranted ? "已授权" : "未授权") - \(bookmarkURL.path)")
-        }
+        // 书签只解析一次，start / stop 使用同一个 URL 对象
+        let scopedURL = bookmarkURL
+        let urlToUse = scopedURL ?? url
+        let accessGranted = scopedURL?.startAccessingSecurityScopedResource() ?? false
+        print("安全作用域访问: \(accessGranted ? "已授权" : "未授权") - \(urlToUse.path)")
 
         // 使用 NSWorkspace 打开文件
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
-        
-        NSWorkspace.shared.open([urlToUse], withApplicationAt: applicationUrl, configuration: configuration) { [weak self] app, error in
+
+        NSWorkspace.shared.open([urlToUse], withApplicationAt: applicationUrl, configuration: configuration) { _, error in
             if let error = error {
                 print("打开文件失败: \(error.localizedDescription)")
             } else {
                 print("文件打开成功")
             }
-            
+
             // 在打开完成后停止安全作用域访问
-            if accessGranted, let bookmarkURL = self?.bookmarkURL {
-                bookmarkURL.stopAccessingSecurityScopedResource()
+            if accessGranted, let scopedURL = scopedURL {
+                scopedURL.stopAccessingSecurityScopedResource()
                 print("安全作用域访问已停止")
             }
         }

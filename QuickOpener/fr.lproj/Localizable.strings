@@ -39,3 +39,4 @@
 "button_clear" = "Effacer";
 "restart_failed_title" = "Redémarrage impossible";
 "restart_failed_message" = "Quittez et rouvrez QuickOpener manuellement pour appliquer le changement de langue.";
+"project_missing_title" = "Fichier introuvable";

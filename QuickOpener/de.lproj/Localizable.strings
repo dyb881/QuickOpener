@@ -39,3 +39,4 @@
 "button_clear" = "Löschen";
 "restart_failed_title" = "Neustart nicht möglich";
 "restart_failed_message" = "Bitte beenden und öffnen Sie QuickOpener manuell, um die Sprachänderung anzuwenden.";
+"project_missing_title" = "Datei nicht gefunden";

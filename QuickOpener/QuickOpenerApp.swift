@@ -101,8 +101,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             self?.toggleWindow() // 触发显示/隐藏窗口
         }
 
-        // 初次启动时显示窗口
-        showWindow()
+        // 仅首次运行时自动显示窗口；之后静默启动，避免每次登录自启都弹窗
+        let defaults = UserDefaults.standard
+        if !defaults.bool(forKey: "hasLaunchedBefore") {
+            defaults.set(true, forKey: "hasLaunchedBefore")
+            showWindow()
+        }
     }
 
     /// 重置数据管理器的缓存（先弹确认，避免误触清空数据）并重新显示窗口。

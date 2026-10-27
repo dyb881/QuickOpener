@@ -39,3 +39,4 @@
 "button_clear" = "消去";
 "restart_failed_title" = "再起動できません";
 "restart_failed_message" = "言語設定を反映するには、QuickOpener を手動で終了して再度開いてください。";
+"project_missing_title" = "ファイルが見つかりません";

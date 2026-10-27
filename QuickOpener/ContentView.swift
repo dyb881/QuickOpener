@@ -25,6 +25,18 @@ struct ContentView: View {
             projectsList
         }
         .frame(width: 300, height: 500)
+        .alert(
+            LocalizedStringKey("project_missing_title"),
+            isPresented: Binding(
+                get: { dataManager.missingProject != nil },
+                set: { if !$0 { dataManager.missingProject = nil } }
+            ),
+            presenting: dataManager.missingProject
+        ) { _ in
+            Button(role: .cancel) {} label: { Text(verbatim: "OK") }
+        } message: { project in
+            Text(verbatim: project.path)
+        }
     }
 
     /// 头部控件，包含过滤文本输入框和添加项目按钮。
@@ -148,6 +160,13 @@ struct ContentView: View {
             HStack(spacing: 8) {
                 projectSetting(item) // 项目设置菜单
                 Text(item.name) // 项目名称
+                    .foregroundStyle(item.exists ? Color.primary : Color.secondary)
+                if !item.exists {
+                    Image(systemName: "exclamationmark.triangle.fill") // 文件已被移动或删除
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .help(Text(LocalizedStringKey("project_missing_title")))
+                }
                 Spacer(minLength: 4)
                 // 用 Button 而不是 onTapGesture：避免与整行的打开手势竞争
                 Button {

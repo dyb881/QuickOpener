@@ -39,3 +39,4 @@
 "button_clear" = "Clear";
 "restart_failed_title" = "Unable to Restart";
 "restart_failed_message" = "Please quit and reopen QuickOpener manually to apply the language change.";
+"project_missing_title" = "File Not Found";
