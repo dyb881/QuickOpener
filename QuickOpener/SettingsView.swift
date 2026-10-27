@@ -45,7 +45,10 @@ struct SettingsView: View {
     ]
 
     var body: some View {
-        Form {
+        // Form 在固定高度下不会自己滚动，内容超长会被裁掉；
+        // 用 ScrollView 包住让它可滚动，窗口尺寸保持固定
+        ScrollView {
+            Form {
             Section(header: Text(LocalizedStringKey("settings_general")).font(.headline)) {
                 Toggle(isOn: $launchAtLogin) {
                     Text(LocalizedStringKey("settings_launch_at_login"))
@@ -104,8 +107,10 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .foregroundColor(.secondary)
             }.padding(.vertical, 5)
+            }
+            .padding()
         }
-        .padding()
+        .frame(width: 520, height: 620)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }
         } message: {
