@@ -56,6 +56,10 @@ xcodebuild test -project QuickOpener.xcodeproj -scheme QuickOpener -destination 
 
 覆盖：默认应用播种、项目权重递增、重复路径去重、时间衰减排序、删除应用后的引用回退、Finder 保护、JSON 导入导出、选中索引越界、清空缓存。
 
+## 分发与更新
+
+应用通过 App Store / TestFlight 分发，版本更新由 App Store 负责，因此**不集成第三方更新框架（如 Sparkle）**——App Store 分发的应用不允许自更新机制。若要改为独立 DMG 分发，需要另行接入 Sparkle 并配置 appcast 地址与 EdDSA 公钥。
+
 如果需要在命令行构建：
 
 ```bash
