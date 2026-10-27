@@ -53,3 +53,14 @@
 "empty_state_title" = "프로젝트가 없습니다";
 "empty_state_hint" = "오른쪽 위 + 버튼을 눌러 파일이나 폴더를 추가하세요";
 "no_match_hint" = "일치하는 프로젝트가 없습니다";
+
+/* Settings: general & data */
+"settings_general" = "일반";
+"settings_launch_at_login" = "로그인 시 자동 실행";
+"settings_data" = "데이터";
+"button_export_projects" = "프로젝트 내보내기…";
+"button_import_projects" = "프로젝트 가져오기…";
+"import_result_title" = "가져오기 완료";
+"import_result_format" = "%1$d개 추가, %2$d개 건너뜀";
+"launch_at_login_failed_title" = "로그인 항목을 변경할 수 없음";
+"launch_at_login_failed_message" = "시스템 설정 → 일반 → 로그인 항목에서 QuickOpener를 직접 추가하세요.";

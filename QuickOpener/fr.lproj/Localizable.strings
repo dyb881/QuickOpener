@@ -51,3 +51,14 @@
 "empty_state_title" = "Aucun projet";
 "empty_state_hint" = "Cliquez sur « + » en haut à droite pour ajouter des fichiers ou dossiers";
 "no_match_hint" = "Aucun projet correspondant";
+
+/* Settings: general & data */
+"settings_general" = "Général";
+"settings_launch_at_login" = "Ouvrir à la connexion";
+"settings_data" = "Données";
+"button_export_projects" = "Exporter les projets...";
+"button_import_projects" = "Importer les projets...";
+"import_result_title" = "Importation terminée";
+"import_result_format" = "%1$d ajoutés, %2$d ignorés";
+"launch_at_login_failed_title" = "Impossible de modifier l'élément de connexion";
+"launch_at_login_failed_message" = "Ajoutez QuickOpener manuellement dans Réglages Système → Général → Ouverture.";

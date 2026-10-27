@@ -51,3 +51,14 @@
 "empty_state_title" = "Noch keine Projekte";
 "empty_state_hint" = "Klicke oben rechts auf „+“, um Dateien oder Ordner hinzuzufügen";
 "no_match_hint" = "Keine passenden Projekte";
+
+/* Settings: general & data */
+"settings_general" = "Allgemein";
+"settings_launch_at_login" = "Bei Anmeldung starten";
+"settings_data" = "Daten";
+"button_export_projects" = "Projekte exportieren...";
+"button_import_projects" = "Projekte importieren...";
+"import_result_title" = "Import abgeschlossen";
+"import_result_format" = "%1$d hinzugefügt, %2$d übersprungen";
+"launch_at_login_failed_title" = "Login-Objekt nicht änderbar";
+"launch_at_login_failed_message" = "Bitte QuickOpener manuell unter Systemeinstellungen → Allgemein → Anmeldeobjekte hinzufügen.";

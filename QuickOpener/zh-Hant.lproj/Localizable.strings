@@ -51,3 +51,14 @@
 "empty_state_title" = "還沒有專案";
 "empty_state_hint" = "點擊右上角「+」新增檔案或資料夾";
 "no_match_hint" = "沒有符合的專案";
+
+/* Settings: general & data */
+"settings_general" = "一般";
+"settings_launch_at_login" = "登入時自動啟動";
+"settings_data" = "資料";
+"button_export_projects" = "匯出專案…";
+"button_import_projects" = "匯入專案…";
+"import_result_title" = "匯入完成";
+"import_result_format" = "新增 %1$d 個專案，跳過 %2$d 個";
+"launch_at_login_failed_title" = "無法設定登入項目";
+"launch_at_login_failed_message" = "請在「系統設定 → 一般 → 登入項目」中手動加入 QuickOpener。";

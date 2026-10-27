@@ -51,3 +51,14 @@
 "empty_state_title" = "还没有项目";
 "empty_state_hint" = "点击右上角「+」添加文件或文件夹";
 "no_match_hint" = "没有匹配的项目";
+
+/* Settings: general & data */
+"settings_general" = "通用";
+"settings_launch_at_login" = "登录时自动启动";
+"settings_data" = "数据";
+"button_export_projects" = "导出项目…";
+"button_import_projects" = "导入项目…";
+"import_result_title" = "导入完成";
+"import_result_format" = "新增 %1$d 个项目，跳过 %2$d 个";
+"launch_at_login_failed_title" = "无法设置登录项";
+"launch_at_login_failed_message" = "请在「系统设置 → 通用 → 登录项」中手动添加 QuickOpener。";

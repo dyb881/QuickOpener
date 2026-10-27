@@ -51,3 +51,14 @@
 "empty_state_title" = "No projects yet";
 "empty_state_hint" = "Click “+” in the top right to add files or folders";
 "no_match_hint" = "No matching projects";
+
+/* Settings: general & data */
+"settings_general" = "General";
+"settings_launch_at_login" = "Launch at login";
+"settings_data" = "Data";
+"button_export_projects" = "Export Projects...";
+"button_import_projects" = "Import Projects...";
+"import_result_title" = "Import Complete";
+"import_result_format" = "Added %1$d, skipped %2$d";
+"launch_at_login_failed_title" = "Unable to Change Login Item";
+"launch_at_login_failed_message" = "Please add QuickOpener manually in System Settings → General → Login Items.";

@@ -52,71 +52,31 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private static let contentSize = NSSize(width: 300, height: 500)
 
     /// 主窗口引用，存储当前打开的窗口。
-    private var window: NSWindow?
+    var window: NSWindow?
 
     /// 设置窗口引用
-    private var settingsWindow: NSWindow?
+    var settingsWindow: NSWindow?
 
     /// 菜单栏状态栏项，用于显示应用程序图标和菜单。
-    private var statusItem: NSStatusItem?
+    var statusItem: NSStatusItem?
 
     /// 窗口内键盘事件监视器（ESC / ↑↓ / 回车 / ⌘数字）
-    private var keyMonitor: Any?
+    var keyMonitor: Any?
 
     /// 标题栏快捷键提示标签（随快捷键设置更新）
-    private var shortcutLabel: NSTextField?
+    var shortcutLabel: NSTextField?
 
     /// 快捷键变化通知的观察者
-    private var shortcutObserver: NSObjectProtocol?
+    var shortcutObserver: NSObjectProtocol?
 
-    /// 应用程序启动完成时调用，设置菜单栏图标、菜单和全局快捷键。
+    /// 应用程序启动完成时调用，装配菜单栏、快捷键与首次启动行为。
     func applicationDidFinishLaunching(_: Notification) {
-        // 设置菜单栏图标
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        if let button = statusItem?.button {
-            let image = NSImage(named: "MenuIcon")
-            image?.size = NSSize(width: 18, height: 18) // 调整图标大小以适配菜单栏
-            button.image = image
-        }
-
-        // 创建菜单栏菜单
-        let menu = NSMenu()
-
-        // 显示窗口
-        let menuShowWindowItem = NSMenuItem(title: NSLocalizedString("menu_show_window", comment: "Show window in status menu"), action: #selector(showWindow), keyEquivalent: "z")
-        menuShowWindowItem.keyEquivalentModifierMask = .option
-        menu.addItem(menuShowWindowItem)
-
-        menu.addItem(NSMenuItem.separator()) // 分割线
-
-        // 显示设置
-        menu.addItem(NSMenuItem(title: NSLocalizedString("menu_settings", comment: "Open settings in status menu"), action: #selector(showSetting), keyEquivalent: ""))
-
-        // 重置缓存
-        menu.addItem(NSMenuItem(title: NSLocalizedString("menu_reset_cache", comment: "Reset cache in status menu"), action: #selector(resetCache), keyEquivalent: ""))
-
-        menu.addItem(NSMenuItem.separator()) // 分割线
-
-        // 退出
-        menu.addItem(NSMenuItem(title: NSLocalizedString("menu_quit", comment: "Quit in status menu"), action: #selector(quitApp), keyEquivalent: "q"))
-
-        statusItem?.menu = menu
+        setupStatusItem() // 菜单栏图标与菜单（AppDelegate+StatusItem.swift）
+        setupShortcutObserver() // 快捷键变化时刷新标题栏提示（AppDelegate+Keyboard.swift）
 
         // 注册全局快捷键
         KeyboardShortcuts.onKeyDown(for: .toggleProjectOpener) { [weak self] in
             self?.toggleWindow() // 触发显示/隐藏窗口
-        }
-
-        // 快捷键被修改后，同步刷新标题栏上的提示（库内部使用这个通知名）
-        shortcutObserver = NotificationCenter.default.addObserver(
-            forName: Notification.Name("KeyboardShortcuts_shortcutByNameDidChange"),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            // queue: .main 保证在主线程，直接断言到 MainActor，避免 Task 捕获警告
-            MainActor.assumeIsolated {
-                self?.updateShortcutLabel()
-            }
         }
 
         // 仅首次运行时自动显示窗口；之后静默启动，避免每次登录自启都弹窗
@@ -124,24 +84,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if !defaults.bool(forKey: "hasLaunchedBefore") {
             defaults.set(true, forKey: "hasLaunchedBefore")
             showWindow()
-        }
-    }
-
-    /// 重置数据管理器的缓存（先弹确认，避免误触清空数据）并重新显示窗口。
-    @objc func resetCache() {
-        print("AppDelegate: resetCache")
-        let alert = NSAlert()
-        alert.alertStyle = .warning
-        alert.messageText = NSLocalizedString("reset_cache_confirm_title", comment: "Reset cache confirmation title")
-        alert.informativeText = NSLocalizedString("reset_cache_confirm_message", comment: "Reset cache confirmation message")
-        alert.addButton(withTitle: NSLocalizedString("button_cancel", comment: "Cancel button"))
-        alert.addButton(withTitle: NSLocalizedString("button_clear", comment: "Clear button"))
-        // 让 statusItem 菜单先收起，避免在菜单事件中同步 runModal
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            guard alert.runModal() == .alertSecondButtonReturn else { return }
-            QuickOpenerApp.dataManager.clearCache()
-            self.showWindow()
         }
     }
 
@@ -181,21 +123,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     /// 隐藏窗口。窗口实例与视图状态保留，下次显示直接复用。
-    private func hideWindow(_ window: NSWindow) {
+    func hideWindow(_ window: NSWindow) {
         print("AppDelegate: hideWindow")
         window.orderOut(nil)
     }
 
-    /// 刷新标题栏上的快捷键提示，跟随设置里录制的结果。
-    @MainActor
-    private func updateShortcutLabel() {
-        let shortcut = KeyboardShortcuts.getShortcut(for: .toggleProjectOpener)
-        shortcutLabel?.stringValue = shortcut?.description ?? ""
-    }
-
     /// 激活现有窗口并将其置于前台。
     /// - Parameter window: 要激活的窗口。
-    private func activateWindow(_ window: NSWindow) {
+    func activateWindow(_ window: NSWindow) {
         print("AppDelegate: activateWindow")
         window.makeKeyAndOrderFront(nil) // 设置窗口为主窗口并显示
         NSApp.activate(ignoringOtherApps: true) // 激活应用程序，忽略其他应用
@@ -282,97 +217,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             y = visible.minY + margin
         }
         return NSPoint(x: x, y: y)
-    }
-
-    /// 窗口内的键盘监听：ESC 隐藏、↑↓ 选择、回车打开选中项、⌘1~9 直选。
-    private func setupKeyMonitor() {
-        // 先移除现有的监视器
-        removeKeyMonitor()
-
-        // 添加新的本地事件监视器
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self = self else { return event }
-            // 有模态面板（NSOpenPanel / NSAlert）时，把按键交还给面板自己处理
-            guard NSApp.modalWindow == nil else { return event }
-            // 只在项目窗口持有键盘焦点时接管，避免影响设置窗口等输入
-            guard let window = self.window, window.isKeyWindow, window.isVisible else { return event }
-
-            let manager = QuickOpenerApp.dataManager
-
-            switch event.keyCode {
-            case 53: // ESC
-                self.hideWindow(window)
-                return nil // 阻止事件继续传递
-            case 125: // ↓
-                manager.moveSelection(by: 1)
-                return nil
-            case 126: // ↑
-                manager.moveSelection(by: -1)
-                return nil
-            case 36, 76: // Return / Enter
-                manager.openSelected()
-                return nil
-            default:
-                break
-            }
-
-            // ⌘1~9 直接打开对应序号的项
-            let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-            if flags.contains(.command),
-               flags.intersection([.shift, .option, .control]).isEmpty,
-               let characters = event.charactersIgnoringModifiers,
-               let number = Int(characters), (1 ... 9).contains(number),
-               manager.openAt(index: number - 1) {
-                return nil
-            }
-
-            return event
-        }
-    }
-
-    /// 移除键盘监听
-    private func removeKeyMonitor() {
-        if let monitor = keyMonitor {
-            NSEvent.removeMonitor(monitor)
-            keyMonitor = nil
-        }
-    }
-
-    /// 打开设置窗口
-    @objc func showSetting() {
-        print("AppDelegate: showSetting")
-        if let existingWindow = settingsWindow, !existingWindow.isReleasedWhenClosed {
-            activateWindow(existingWindow)
-        } else {
-            let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
-            let windowRect = NSRect(
-                x: screenFrame.midX - 250,
-                y: screenFrame.midY - 400,
-                width: 500,
-                height: 300
-            )
-            let newWindow = NSWindow(
-                contentRect: windowRect,
-                styleMask: [.titled, .closable],
-                backing: .buffered,
-                defer: false
-            )
-            let hostingController = NSHostingController(rootView:
-                SettingsView()
-                    .modelContainer(QuickOpenerApp.sharedModelContainer)
-                    .environmentObject(QuickOpenerApp.dataManager)
-                    .frame(width: 500, height: 300)
-            )
-            newWindow.contentViewController = hostingController
-            newWindow.delegate = self
-            newWindow.isReleasedWhenClosed = false
-            newWindow.isMovableByWindowBackground = true // 允许通过背景拖动窗口
-            newWindow.standardWindowButton(.miniaturizeButton)?.isEnabled = false // 禁用最小化按钮
-            newWindow.standardWindowButton(.zoomButton)?.isEnabled = false // 禁用缩放按钮
-            newWindow.title = NSLocalizedString("menu_settings", comment: "Settings window title")
-            activateWindow(newWindow)
-            settingsWindow = newWindow
-        }
     }
 
     /// 当窗口失去激活状态时隐藏窗口（保留实例，方便下次复用同一份视图状态）。

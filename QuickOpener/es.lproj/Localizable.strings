@@ -51,3 +51,14 @@
 "empty_state_title" = "Aún no hay proyectos";
 "empty_state_hint" = "Haz clic en «+» arriba a la derecha para agregar archivos o carpetas";
 "no_match_hint" = "No hay proyectos coincidentes";
+
+/* Settings: general & data */
+"settings_general" = "General";
+"settings_launch_at_login" = "Iniciar al iniciar sesión";
+"settings_data" = "Datos";
+"button_export_projects" = "Exportar proyectos...";
+"button_import_projects" = "Importar proyectos...";
+"import_result_title" = "Importación completada";
+"import_result_format" = "%1$d agregados, %2$d omitidos";
+"launch_at_login_failed_title" = "No se puede cambiar el ítem de inicio";
+"launch_at_login_failed_message" = "Agrega QuickOpener manualmente en Ajustes del Sistema → General → Ítems de inicio.";

@@ -7,15 +7,29 @@
 
 import AppKit
 import KeyboardShortcuts
+import ServiceManagement
 import SwiftData
 import SwiftUI
+internal import UniformTypeIdentifiers
 
 struct SettingsView: View {
     // "" 代表系统默认
     @AppStorage("appLanguage") private var appLanguage: String = ""
 
+    /// 数据管理，用于导入导出项目列表。
+    @EnvironmentObject private var dataManager: DataManager
+
     /// 自动重启失败时提示用户，避免点了按钮后应用直接退出。
     @State private var restartFailed = false
+
+    /// 登录项开关状态（初值取当前系统状态）。
+    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+
+    /// 登录项设置失败提示。
+    @State private var launchAtLoginFailed = false
+
+    /// 导入结果摘要，非空时弹提示。
+    @State private var importSummary: String?
 
     // 支持的语言选项
     private let languages = [
@@ -32,6 +46,15 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section(header: Text(LocalizedStringKey("settings_general")).font(.headline)) {
+                Toggle(isOn: $launchAtLogin) {
+                    Text(LocalizedStringKey("settings_launch_at_login"))
+                }
+                .onChange(of: launchAtLogin) { _, enabled in
+                    updateLaunchAtLogin(enabled)
+                }
+            }.padding(.vertical, 5)
+
             Section(header: Text(LocalizedStringKey("settings_language")).font(.headline)) {
                 HStack {
                     Text(LocalizedStringKey("label_language"))
@@ -62,6 +85,18 @@ struct SettingsView: View {
                     }
                 }
             }.padding(.vertical, 5)
+
+            Section(header: Text(LocalizedStringKey("settings_data")).font(.headline)) {
+                HStack {
+                    Button(LocalizedStringKey("button_export_projects")) {
+                        exportProjects()
+                    }
+                    Button(LocalizedStringKey("button_import_projects")) {
+                        importProjects()
+                    }
+                }
+            }.padding(.vertical, 5)
+
             Section(header: Text(LocalizedStringKey("settings_about")).font(.headline)) {
                 Text(LocalizedStringKey("app_description_short"))
                     .foregroundColor(.secondary)
@@ -76,6 +111,73 @@ struct SettingsView: View {
         } message: {
             Text(LocalizedStringKey("restart_failed_message"))
         }
+        .alert(LocalizedStringKey("launch_at_login_failed_title"), isPresented: $launchAtLoginFailed) {
+            Button(role: .cancel) {} label: { Text(verbatim: "OK") }
+        } message: {
+            Text(LocalizedStringKey("launch_at_login_failed_message"))
+        }
+        .alert(
+            LocalizedStringKey("import_result_title"),
+            isPresented: Binding(
+                get: { importSummary != nil },
+                set: { if !$0 { importSummary = nil } }
+            ),
+            presenting: importSummary
+        ) { _ in
+            Button(role: .cancel) {} label: { Text(verbatim: "OK") }
+        } message: { summary in
+            Text(verbatim: summary)
+        }
+    }
+
+    /// 读写系统登录项。失败时回滚开关状态并提示。
+    private func updateLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            print("登录项设置失败: \(error.localizedDescription)")
+            launchAtLoginFailed = true
+            launchAtLogin = SMAppService.mainApp.status == .enabled
+        }
+    }
+
+    /// 导出项目列表为 JSON 文件。
+    private func exportProjects() {
+        guard let data = dataManager.exportPayload() else { return }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "QuickOpener-Projects.json"
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try data.write(to: url, options: .atomic)
+        } catch {
+            print("导出失败: \(error.localizedDescription)")
+        }
+    }
+
+    /// 从 JSON 文件导入项目列表（按路径去重）。
+    private func importProjects() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        guard let data = try? Data(contentsOf: url),
+              let result = dataManager.importPayload(from: data) else {
+            print("导入失败：文件格式不正确")
+            return
+        }
+        importSummary = String(
+            format: NSLocalizedString("import_result_format", comment: "Import result summary"),
+            result.added,
+            result.skipped
+        )
     }
 
     /// 重启应用以应用语言设置。
@@ -99,4 +201,6 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .modelContainer(QuickOpenerApp.sharedModelContainer)
+        .environmentObject(QuickOpenerApp.dataManager)
 }

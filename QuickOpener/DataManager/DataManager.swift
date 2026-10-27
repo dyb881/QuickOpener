@@ -46,9 +46,20 @@ class DataManager: ObservableObject {
         return items[min(max(selectedIndex, 0), items.count - 1)]
     }
 
+    /// 权重半衰期（小时）：7 天没打开过的项目，权重折半。
+    private static let weightHalfLifeHours: Double = 24 * 7
+
+    /// 排序分数：weight 按「距最近打开时间」做半衰期衰减，实现「最近常用优先」。
+    /// 历史数据（lastOpenedAt 为 nil）视为很久未打开，排在后面，打开一次即回升。
+    private func sortScore(for project: ProjectModel, now: Date) -> Double {
+        guard let lastOpenedAt = project.lastOpenedAt else { return 0 }
+        let hours = max(now.timeIntervalSince(lastOpenedAt) / 3600, 0)
+        return Double(project.weight) * pow(0.5, hours / Self.weightHalfLifeHours)
+    }
+
     /// 计算属性，返回经过过滤和排序的项目列表，用于 UI 渲染。
     /// - 按 `filterText` 过滤项目名称或路径（忽略大小写）。
-    /// - 按权重（`weight`）降序排序。
+    /// - 按衰减后的权重降序排序（同分时比 weight，再按路径保证顺序稳定）。
     var renderProjects: [ProjectModel] {
         var filteredProjects = projects
         if !filterText.isEmpty {
@@ -57,7 +68,15 @@ class DataManager: ObservableObject {
                     $0.path.lowercased().contains(filterText.lowercased())
             }
         }
-        return filteredProjects.sorted { $0.weight > $1.weight }
+        let now = Date()
+        return filteredProjects
+            .map { (project: $0, score: sortScore(for: $0, now: now)) }
+            .sorted { lhs, rhs in
+                if lhs.score != rhs.score { return lhs.score > rhs.score }
+                if lhs.project.weight != rhs.project.weight { return lhs.project.weight > rhs.project.weight }
+                return lhs.project.path < rhs.project.path
+            }
+            .map { $0.project }
     }
 
     /// SwiftData 的模型上下文，用于持久化数据操作。
@@ -106,12 +125,25 @@ class DataManager: ObservableObject {
         refreshMissingPaths()
     }
 
-    /// 重新统计失效项目（每个项目一次文件检查，仅在需要时调用）。
+    /// 重新统计失效项目：文件检查放到后台线程，主线程只回填结果。
+    /// 项目多且路径在 iCloud 上时，避免窗口显示瞬间卡住。
     func refreshMissingPaths() {
-        let missing = Set(projects.filter { !$0.exists }.map { $0.path })
-        if missing != missingPaths {
-            missingPaths = missing
+        let paths = projects.map { $0.path }
+        Task { @MainActor in
+            let missing = await Self.computeMissingPaths(paths)
+            if missing != self.missingPaths {
+                self.missingPaths = missing
+            }
         }
+    }
+
+    /// 纯文件检查，nonisolated 使其跑在通用执行器而不是主线程。
+    private nonisolated static func computeMissingPaths(_ paths: [String]) async -> Set<String> {
+        var missing = Set<String>()
+        for path in paths where !FileManager.default.fileExists(atPath: path) {
+            missing.insert(path)
+        }
+        return missing
     }
 
     /// 隐藏项目窗口。打开项目成功后显式调用，不再依赖窗口失焦的副作用。
@@ -306,6 +338,80 @@ class DataManager: ObservableObject {
         try? modelContext.save()
         projects.append(contentsOf: newProjects)
         refreshMissingPaths()
+    }
+
+    // MARK: - 导入 / 导出
+
+    /// 导入导出用的 JSON 结构（只保留路径与权重，不含安全书签）。
+    struct TransferPayload: Codable {
+        struct ProjectEntry: Codable {
+            var path: String
+            var applicationPath: String
+            var weight: Int
+        }
+
+        struct ApplicationEntry: Codable {
+            var path: String
+        }
+
+        var version: Int
+        var exportedAt: Date
+        var projects: [ProjectEntry]
+        var applications: [ApplicationEntry]
+    }
+
+    /// 导出当前项目与应用列表为 JSON。
+    func exportPayload() -> Data? {
+        let payload = TransferPayload(
+            version: 1,
+            exportedAt: Date(),
+            projects: projects.map {
+                .init(path: $0.path, applicationPath: $0.applicationPath, weight: $0.weight)
+            },
+            applications: applications.map { .init(path: $0.path) }
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+        return try? encoder.encode(payload)
+    }
+
+    /// 从 JSON 导入，按路径去重（已存在的跳过）。
+    /// - Returns: 新增与跳过的数量；文件格式不正确时返回 nil。
+    @discardableResult
+    func importPayload(from data: Data) -> (added: Int, skipped: Int)? {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        guard let payload = try? decoder.decode(TransferPayload.self, from: data) else { return nil }
+
+        for entry in payload.applications where !applications.contains(where: { $0.path == entry.path }) {
+            let app = ApplicationModel(path: entry.path)
+            modelContext.insert(app)
+            applications.append(app)
+        }
+
+        var nextWeight = (projects.map { $0.weight }.max() ?? -1) + 1
+        var added = 0
+        var skipped = 0
+        for entry in payload.projects {
+            guard !projects.contains(where: { $0.path == entry.path }) else {
+                skipped += 1
+                continue
+            }
+            let project = ProjectModel(
+                path: entry.path,
+                applicationPath: entry.applicationPath,
+                weight: nextWeight
+            )
+            modelContext.insert(project)
+            projects.append(project)
+            nextWeight += 1
+            added += 1
+        }
+
+        try? modelContext.save()
+        refreshMissingPaths()
+        return (added, skipped)
     }
 
     /// 删除指定的项目，从持久化存储和项目列表中移除。

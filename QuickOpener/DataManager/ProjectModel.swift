@@ -26,6 +26,9 @@ final class ProjectModel: FileCommonDataProtocol {
     /// 权重值，用于记录打开频率或排序优先级，默认为 0，每次调用 `open(_:)` 时递增。
     var weight: Int
 
+    /// 最近一次打开（或添加）时间，用于按半衰期衰减排序；历史数据为 nil。
+    var lastOpenedAt: Date?
+
     /// 安全书签数据，用于存储安全访问书签。
     var bookmarkData: Data?
 
@@ -39,6 +42,7 @@ final class ProjectModel: FileCommonDataProtocol {
         self.path = path
         self.applicationPath = applicationPath
         self.weight = weight
+        lastOpenedAt = Date() // 新添加的项目视为「刚刚打开」，保证排在列表前面
         let url = URL(fileURLWithPath: path)
         bookmarkData = try? url.bookmarkData(options: .withSecurityScope)
     }
@@ -92,8 +96,9 @@ final class ProjectModel: FileCommonDataProtocol {
             applicationPath = path
         }
 
-        // 增加权重计数
+        // 增加权重计数并记录最近打开时间
         weight += 1
+        lastOpenedAt = Date()
 
         // 书签只解析一次，start / stop 使用同一个 URL 对象
         let scopedURL = bookmarkURL

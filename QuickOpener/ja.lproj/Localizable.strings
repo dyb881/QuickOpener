@@ -51,3 +51,14 @@
 "empty_state_title" = "プロジェクトがありません";
 "empty_state_hint" = "右上の「+」からファイルやフォルダを追加してください";
 "no_match_hint" = "一致するプロジェクトがありません";
+
+/* Settings: general & data */
+"settings_general" = "一般";
+"settings_launch_at_login" = "ログイン時に起動";
+"settings_data" = "データ";
+"button_export_projects" = "プロジェクトを書き出す…";
+"button_import_projects" = "プロジェクトを読み込む…";
+"import_result_title" = "読み込み完了";
+"import_result_format" = "%1$d 件追加、%2$d 件スキップ";
+"launch_at_login_failed_title" = "ログイン項目を変更できません";
+"launch_at_login_failed_message" = "「システム設定 → 一般 → ログイン項目」で QuickOpener を手動で追加してください。";
