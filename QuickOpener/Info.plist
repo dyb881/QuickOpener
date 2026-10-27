@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  App Sandbox 等权限声明统一放在 QuickOpener.entitlements（由 CODE_SIGN_ENTITLEMENTS 引用），
+  写在 Info.plist 的 com.apple.security.* 键不会生效。
+  其余 Info.plist 键由 GENERATE_INFOPLIST_FILE + INFOPLIST_KEY_* 构建设置生成，此处保持为空。
+-->
 <plist version="1.0">
-<dict>
-	<key>com.apple.security.app-sandbox</key>
-	<true/>
-	<key>com.apple.security.files.user-selected.read-only</key>
-	<true/>
-	<key>com.apple.security.files.bookmarks.app-scope</key>
-	<true/>
-</dict>
+<dict/>
 </plist>
