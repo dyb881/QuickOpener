@@ -35,6 +35,7 @@ struct SettingsView: View {
     @State private var importSummary: String?
     @State private var showClearCacheAlert = false
     @State private var selectedTab: SettingsTab = .general
+    @State private var hoveredSwatch: AccentTheme?
 
     // 支持的语言选项
     private let languages = [
@@ -70,23 +71,33 @@ struct SettingsView: View {
                 }
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.5), radius: 1, y: 0.5)
                 }
             }
-            .frame(width: 22, height: 22)
-            .overlay(Circle().strokeBorder(Color.primary.opacity(0.18), lineWidth: 1))
+            .frame(width: 25, height: 25)
+            .overlay(Circle().strokeBorder(Color.primary.opacity(0.15), lineWidth: 1))
             .overlay(
+                // 选中环：1.5pt 太粗、放大 1.28 太远，会在亮色下糊成一圈黑边
                 Circle()
-                    .strokeBorder(Color.primary, lineWidth: 1.5)
-                    .scaleEffect(1.28)
+                    .strokeBorder(Color.primary.opacity(0.8), lineWidth: 1.5)
+                    .scaleEffect(1.2)
                     .opacity(isSelected ? 1 : 0)
             )
+            .scaleEffect(hoveredSwatch == item ? 1.08 : 1)
+            .animation(.easeOut(duration: 0.12), value: hoveredSwatch)
             .padding(3)
             .contentShape(Circle())
         }
         .buttonStyle(.plain)
+        .onHover { hovering in
+            if hovering {
+                hoveredSwatch = item
+            } else if hoveredSwatch == item {
+                hoveredSwatch = nil
+            }
+        }
         .help(Text(LocalizedStringKey(item.localizedKey)))
     }
 
@@ -267,7 +278,7 @@ struct SettingsView: View {
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()
-                        .frame(width: 216)
+                        .frame(width: 216, alignment: .trailing)
                     }
 
                     Rectangle().fill(DS.line).frame(height: 1)
@@ -277,11 +288,12 @@ struct SettingsView: View {
                             .font(.system(size: 12.5))
                             .foregroundStyle(DS.text)
                         Spacer(minLength: 12)
-                        HStack(spacing: 10) {
+                        HStack(spacing: 6) {
                             ForEach(AccentTheme.allCases) { item in
                                 themeSwatch(item)
                             }
                         }
+                        .frame(width: 216, alignment: .trailing) // 6 × (25+6) + 5 × 6 = 216
                     }
 
                     Rectangle().fill(DS.line).frame(height: 1)
@@ -298,7 +310,7 @@ struct SettingsView: View {
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()
-                        .frame(width: 216)
+                        .frame(width: 216, alignment: .trailing)
                     }
 
                     Rectangle().fill(DS.line).frame(height: 1)
