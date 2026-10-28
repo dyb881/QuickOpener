@@ -83,3 +83,9 @@
 "appearance_system" = "跟随系统";
 "appearance_light" = "亮色";
 "appearance_dark" = "暗色";
+
+/* 当前项横条指标 */
+"kpi_recent" = "最近打开";
+"kpi_count" = "次数";
+"kpi_size" = "大小";
+"kpi_branch" = "分支";

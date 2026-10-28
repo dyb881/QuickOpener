@@ -10,24 +10,27 @@ import KeyboardShortcuts
 import SwiftData
 import SwiftUI
 
-/// 主视图：搜索、项目列表与快捷键底栏（深色玻璃视觉）。
+/// 主视图：E3 布局 —— 输入行 / 当前项横条 / 五列列表 / 快捷键底栏。
 struct ContentView: View {
     @EnvironmentObject private var dataManager: DataManager
     @EnvironmentObject private var theme: ThemeManager
 
+    /// 异步巡检结果（目录大小、Git 分支），就绪后自动刷新横条。
+    @ObservedObject private var inspector = ProjectInspector.shared
+
     @State private var hoveredPath: String?
     @FocusState private var isFilterFocused: Bool
-    /// 快捷键变化时自增，驱动标题栏徽标重绘。
+    /// 快捷键变化时自增，驱动 ⌥Z 徽标重绘。
     @State private var shortcutRevision = 0
 
     var body: some View {
         VStack(spacing: 0) {
-            titleBar
-            searchRow
+            inputRow
+            tierBar
             listArea
             footBar
         }
-        .frame(width: 300, height: 500)
+        .frame(width: 560, height: 340)
         .background(
             ZStack {
                 VisualEffectBackground()
@@ -58,33 +61,64 @@ struct ContentView: View {
         .onChange(of: dataManager.filterText) { _, _ in
             dataManager.selectedIndex = 0
         }
+        .onChange(of: dataManager.selectedProject?.path) { _, newPath in
+            // 选择变化时触发巡检（幂等，已算过的不会重复读盘）
+            if let newPath {
+                inspector.inspect(path: newPath)
+            }
+        }
+        .onAppear {
+            if let path = dataManager.selectedProject?.path {
+                inspector.inspect(path: path)
+            }
+        }
     }
 
-    // MARK: - 标题栏
+    // MARK: - 输入行
 
-    /// 自绘标题栏：左侧让出窗口红绿灯位置，右侧显示当前唤起快捷键。
-    private var titleBar: some View {
-        ZStack {
-            WindowDragArea() // 整条标题栏都能拖动窗口
+    private var inputRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(theme.accent)
 
-            HStack(spacing: 0) {
-                Spacer(minLength: 0)
-                Text(currentShortcut)
-                    .font(DS.mono(10))
-                    .foregroundStyle(DS.text3)
-                    .padding(.horizontal, 6)
-                    .frame(height: 20)
-                    .background(DS.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .strokeBorder(DS.line, lineWidth: 1)
-                    )
-            }
-            .padding(.trailing, 10)
-            .allowsHitTesting(false) // 让拖动区拿到鼠标事件
+            TextField(
+                "",
+                text: $dataManager.filterText,
+                prompt: Text(LocalizedStringKey("filter_projects")).foregroundColor(DS.text2)
+            )
+            .textFieldStyle(.plain)
+            .font(.system(size: 14))
+            .focused($isFilterFocused)
+
+            Text(matchCountText)
+                .font(DS.mono(9))
+                .foregroundStyle(DS.text3)
+
+            addProjectButton
+
+            Text(currentShortcut)
+                .font(DS.mono(9))
+                .foregroundStyle(DS.text3)
+                .padding(.horizontal, 5)
+                .frame(height: 18)
+                .background(DS.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .strokeBorder(DS.line, lineWidth: 1)
+                )
         }
-        .frame(height: 38)
+        .padding(.horizontal, 13)
+        .frame(height: 40)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(DS.line).frame(height: 1)
+        }
+    }
+
+    /// 匹配数 / 总数，如 `2 / 24`。
+    private var matchCountText: String {
+        "\(dataManager.renderProjects.count) / \(dataManager.projects.count)"
     }
 
     /// 当前全局快捷键文案，未设置时回退到默认值。
@@ -93,36 +127,165 @@ struct ContentView: View {
         return KeyboardShortcuts.getShortcut(for: .toggleProjectOpener)?.description ?? "⌥Z"
     }
 
-    // MARK: - 搜索
+    // MARK: - 当前项横条
 
-    private var searchRow: some View {
-        HStack(spacing: 8) {
-            HStack(spacing: 7) {
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(theme.accent)
-                TextField(
-                    "",
-                    text: $dataManager.filterText,
-                    prompt: Text(LocalizedStringKey("filter_projects")).foregroundColor(DS.text2)
-                )
-                .textFieldStyle(.plain)
-                .font(.system(size: 12.5))
-                .focused($isFilterFocused)
+    @ViewBuilder
+    private var tierBar: some View {
+        if let item = dataManager.selectedProject {
+            VStack(spacing: 0) {
+                HStack(spacing: 9) {
+                    Image(nsImage: item.applicationIcon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 34, height: 34)
+                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.name)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(DS.textStrong)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Text((item.path as NSString).abbreviatingWithTildeInPath)
+                            .font(DS.mono(9))
+                            .foregroundStyle(DS.text3)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+
+                    Spacer(minLength: 8)
+
+                    appChip(item)
+                }
+                .frame(height: 44)
+
+                kpiRow(item)
+                    .frame(height: 43)
             }
-            .padding(.horizontal, 9)
-            .frame(height: 28)
-            .background(theme.accent.opacity(0.045))
-            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .strokeBorder(theme.accent.opacity(0.34), lineWidth: 1)
-            )
-
-            addProjectButton
+            .padding(.horizontal, 14)
+            .background(DS.surface)
+            .overlay(alignment: .bottom) {
+                LinearGradient(
+                    colors: [theme.accent.opacity(0.8), .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(height: 1)
+            }
         }
-        .padding(.horizontal, 10)
-        .padding(.bottom, 10)
+    }
+
+    /// 四枚指标：最近 / 次数 / 大小（异步）/ 分支（异步）。
+    private func kpiRow(_ item: ProjectModel) -> some View {
+        HStack(spacing: 0) {
+            kpiCell(LocalizedStringKey("kpi_recent"), hot: true) {
+                Text(relativeShort(item.lastOpenedAt))
+                    .foregroundStyle(theme.accent)
+            }
+            kpiDivider
+            kpiCell(LocalizedStringKey("kpi_count")) {
+                Text(verbatim: "\(item.weight)")
+                    .foregroundStyle(DS.text2)
+            }
+            kpiDivider
+            kpiCell(LocalizedStringKey("kpi_size")) {
+                if dataManager.missingPaths.contains(item.path) {
+                    Text(verbatim: "—").foregroundStyle(DS.text3)
+                } else if let stats = inspector.stats(for: item.path) {
+                    Text(verbatim: ProjectInspector.format(bytes: stats.bytes))
+                        .foregroundStyle(DS.text2)
+                } else {
+                    SkeletonBar(width: 30)
+                }
+            }
+            kpiDivider
+            kpiCell(LocalizedStringKey("kpi_branch")) {
+                if dataManager.missingPaths.contains(item.path) {
+                    Text(verbatim: "—").foregroundStyle(DS.text3)
+                } else if let branch = inspector.branch(for: item.path) {
+                    Text(verbatim: branch)
+                        .foregroundStyle(DS.text2)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                } else if inspector.branches[item.path] != nil {
+                    // 已确认不是 Git 仓库
+                    Text(verbatim: "—").foregroundStyle(DS.text3)
+                } else {
+                    SkeletonBar(width: 24)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func kpiCell<Content: View>(
+        _ title: LocalizedStringKey,
+        hot: Bool = false,
+        @ViewBuilder value: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 7.5, weight: .semibold))
+                .tracking(0.15)
+                .foregroundStyle(DS.text3)
+                .lineLimit(1)
+            value()
+                .font(DS.mono(11))
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var kpiDivider: some View {
+        Rectangle()
+            .fill(DS.line)
+            .frame(width: 1, height: 20)
+            .padding(.horizontal, 10)
+    }
+
+    /// 打开方式切换（点击弹出应用菜单）。
+    private func appChip(_ item: ProjectModel) -> some View {
+        Menu {
+            Text(LocalizedStringKey("menu_current_application"))
+            Button {
+                item.open()
+            } label: {
+                Image(nsImage: item.applicationIcon)
+                Text(item.applicationName)
+            }
+
+            if dataManager.applications.count >= 2 {
+                Text(LocalizedStringKey("menu_available_applications"))
+                ForEach(dataManager.applications.filter { $0.path != item.applicationPath }, id: \.path) { app in
+                    appButton(app) {
+                        item.open(app.path)
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(nsImage: item.applicationIcon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 10, height: 10)
+                Text(item.applicationName)
+                    .font(DS.mono(8.5))
+            }
+            .foregroundStyle(DS.text2)
+            .padding(.horizontal, 7)
+            .frame(height: 20)
+            .background(DS.surface2)
+            .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                    .strokeBorder(DS.line, lineWidth: 1)
+            )
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .frame(height: 20)
+        .help(Text(LocalizedStringKey("context_set_default_app")))
     }
 
     // MARK: - 列表
@@ -138,13 +301,13 @@ struct ContentView: View {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
-                        LazyVStack(spacing: 1) {
+                        LazyVStack(spacing: 0) {
                             ForEach(Array(dataManager.renderProjects.enumerated()), id: \.element.path) { index, item in
                                 projectRow(item, index: index)
                                     .id(item.path)
                             }
                         }
-                        .padding(6)
+                        .padding(.horizontal, 10)
                     }
                     .scrollIndicators(.automatic)
                     .onChange(of: dataManager.selectedProject?.path) { _, newPath in
@@ -159,135 +322,62 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var emptyState: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "tray")
-                .font(.system(size: 26, weight: .light))
-                .foregroundStyle(DS.text3)
-            Text(LocalizedStringKey("empty_state_title"))
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(DS.text)
-            Text(LocalizedStringKey("empty_state_hint"))
-                .font(.system(size: 11))
-                .foregroundStyle(DS.text3)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-            Button {
-                dataManager.addProjects()
-            } label: {
-                Label(LocalizedStringKey("add_projects"), systemImage: "plus")
-                    .font(.system(size: 12))
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.small)
-            .padding(.top, 2)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 24)
-    }
-
-    private var noMatchState: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 22, weight: .light))
-                .foregroundStyle(DS.text3)
-            Text(LocalizedStringKey("no_match_hint"))
-                .font(.system(size: 11))
-                .foregroundStyle(DS.text3)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // MARK: - 底栏
-
-    private var footBar: some View {
-        HStack(spacing: 12) {
-            footItem("↑↓", key: "foot_select")
-            footItem("↩", key: "foot_open")
-            footItem("esc", key: "foot_close")
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 12)
-        .frame(height: 30)
-        .background(DS.surface)
-        .overlay(alignment: .top) {
-            Rectangle().fill(DS.line).frame(height: 1)
-        }
-    }
-
-    private func footItem(_ symbol: String, key: String) -> some View {
-        HStack(spacing: 4) {
-            Text(symbol).foregroundStyle(DS.text2)
-            Text(LocalizedStringKey(key))
-        }
-        .font(DS.mono(9.5))
-        .foregroundStyle(DS.text3)
-    }
-
-    // MARK: - 单行
-
-    /// 单行项目：应用图标菜单 + 名称 + 父目录 + 快捷键徽标 / 删除按钮。
+    /// 单行：序号 / 名称 / 父目录 / 时间 / ⌘N（悬停时换成垃圾桶）。
     private func projectRow(_ item: ProjectModel, index: Int) -> some View {
         let isSelected = dataManager.selectedProject?.path == item.path
         let isHovered = hoveredPath == item.path
         let isMissing = dataManager.missingPaths.contains(item.path)
 
-        return HStack(spacing: 10) {
-            projectSetting(item)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(item.name)
-                    .font(.system(size: 13))
-                    .foregroundStyle(isSelected ? DS.textStrong : (isMissing ? DS.text3 : DS.text))
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                Text(isMissing
-                     ? NSLocalizedString("project_missing_title", comment: "")
-                     : parentPath(item.path))
-                    .font(DS.mono(9.5))
-                    .foregroundStyle(isMissing ? DS.warn : DS.text3)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            Spacer(minLength: 4)
+        return HStack(spacing: 7) {
+            Text(String(format: "%02d", index + 1))
+                .font(DS.mono(8))
+                .foregroundStyle(isSelected ? theme.accent : DS.text3)
+                .frame(width: 15, alignment: .leading)
 
-            if isMissing {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 10))
-                    .foregroundStyle(DS.warn)
-                    .help(Text(LocalizedStringKey("project_missing_title")))
-            }
+            highlightedName(item.name, selected: isSelected, missing: isMissing)
+                .font(.system(size: 10.5))
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            if isHovered {
-                Button {
-                    dataManager.removeProjects(item)
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.system(size: 11))
-                        .foregroundStyle(DS.text2)
+            Text(isMissing ? NSLocalizedString("project_missing_title", comment: "") : parentPath(item.path))
+                .font(DS.mono(8.5))
+                .foregroundStyle(isMissing ? DS.warn : (isSelected ? theme.accent : DS.text3))
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .frame(width: 118, alignment: .trailing)
+
+            Text(relativeShort(item.lastOpenedAt))
+                .font(DS.mono(8.5))
+                .foregroundStyle(isSelected ? theme.accent : DS.text3)
+                .frame(width: 34, alignment: .trailing)
+
+            Group {
+                if isHovered {
+                    Button {
+                        dataManager.removeProjects(item)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 10))
+                            .foregroundStyle(DS.text2)
+                    }
+                    .buttonStyle(.plain)
+                } else if isSelected, index < 9 {
+                    Text("⌘\(index + 1)")
+                        .font(DS.mono(7.5))
+                        .foregroundStyle(theme.accent.opacity(0.85))
+                } else if isMissing {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 9))
+                        .foregroundStyle(DS.warn)
                 }
-                .buttonStyle(.plain)
-            } else if isSelected, index < 9 {
-                KeyCap(text: "⌘\(index + 1)", tint: theme.accent)
             }
+            .frame(width: 26, alignment: .trailing)
         }
-        .padding(.horizontal, 8)
-        .frame(height: 38)
+        .padding(.horizontal, 7)
+        .frame(height: 26)
         .background(rowFill(selected: isSelected, hovered: isHovered))
-        .clipShape(RoundedRectangle(cornerRadius: DS.rowRadius, style: .continuous))
-        .overlay(alignment: .leading) {
-            if isSelected {
-                Capsule()
-                    .fill(theme.accent)
-                    .frame(width: 2, height: 20)
-                    .padding(.leading, 1)
-            }
-        }
-        .overlay {
-            if isSelected {
-                RoundedRectangle(cornerRadius: DS.rowRadius, style: .continuous)
-                    .strokeBorder(theme.accent.opacity(0.22), lineWidth: 1)
-            }
-        }
+        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
         .contentShape(Rectangle())
         .onHover { hovering in
             hoveredPath = hovering ? item.path : nil
@@ -333,12 +423,30 @@ struct ContentView: View {
         }
     }
 
-    /// 行背景：键盘选中 > 鼠标悬停 > 透明。
+    /// 名称在搜索命中处染色。
+    private func highlightedName(_ name: String, selected: Bool, missing: Bool) -> Text {
+        let query = dataManager.filterText
+        let baseColor: Color = selected ? DS.textStrong : (missing ? DS.text3 : DS.text)
+
+        guard !query.isEmpty,
+              let range = name.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) else {
+            return Text(name).foregroundColor(baseColor)
+        }
+
+        let before = String(name[name.startIndex..<range.lowerBound])
+        let match = String(name[range])
+        let after = String(name[range.upperBound...])
+
+        return Text(before).foregroundColor(baseColor)
+            + Text(match).foregroundColor(theme.accent).bold()
+            + Text(after).foregroundColor(baseColor)
+    }
+
     @ViewBuilder
     private func rowFill(selected: Bool, hovered: Bool) -> some View {
         if selected {
             LinearGradient(
-                colors: [theme.accent.opacity(0.16), theme.accent.opacity(0.015)],
+                colors: [theme.accent.opacity(0.15), theme.accent.opacity(0.015)],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -349,21 +457,79 @@ struct ContentView: View {
         }
     }
 
-    /// 行内第二行显示的父目录，`~` 缩写。
-    private func parentPath(_ path: String) -> String {
-        ((path as NSString).deletingLastPathComponent as NSString).abbreviatingWithTildeInPath
+    // MARK: - 空态
+
+    private var emptyState: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "tray")
+                .font(.system(size: 24, weight: .light))
+                .foregroundStyle(DS.text3)
+            Text(LocalizedStringKey("empty_state_title"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(DS.text)
+            Text(LocalizedStringKey("empty_state_hint"))
+                .font(.system(size: 11))
+                .foregroundStyle(DS.text3)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            Button {
+                dataManager.addProjects()
+            } label: {
+                Label(LocalizedStringKey("add_projects"), systemImage: "plus")
+                    .font(.system(size: 12))
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .padding(.top, 2)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 24)
+    }
+
+    private var noMatchState: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 20, weight: .light))
+                .foregroundStyle(DS.text3)
+            Text(LocalizedStringKey("no_match_hint"))
+                .font(.system(size: 11))
+                .foregroundStyle(DS.text3)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - 底栏
+
+    private var footBar: some View {
+        HStack(spacing: 12) {
+            footItem("↑↓", key: "foot_select")
+            footItem("↩", key: "foot_open")
+            footItem("esc", key: "foot_close")
+            Spacer(minLength: 0)
+            Text(matchCountText)
+                .font(DS.mono(8.5))
+                .foregroundStyle(DS.text3)
+        }
+        .padding(.horizontal, 13)
+        .frame(height: 28)
+        .background(DS.surface)
+        .overlay(alignment: .top) {
+            Rectangle().fill(DS.line).frame(height: 1)
+        }
+    }
+
+    private func footItem(_ symbol: String, key: String) -> some View {
+        HStack(spacing: 4) {
+            Text(symbol).foregroundStyle(DS.text2)
+            Text(LocalizedStringKey(key))
+        }
+        .font(DS.mono(8.5))
+        .foregroundStyle(DS.text3)
     }
 
     // MARK: - 菜单
 
-    private func appButton(_ app: ApplicationModel, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(nsImage: app.icon)
-            Text(app.name)
-        }
-    }
-
-    /// 添加项目 / 管理应用的菜单按钮（不用 primaryAction，否则菜单难以展开）。
+    /// 添加项目 / 管理应用的菜单按钮。
     private var addProjectButton: some View {
         Menu {
             Button {
@@ -415,57 +581,46 @@ struct ContentView: View {
             }
         } label: {
             Image(systemName: "plus")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(DS.text2)
-                .frame(width: 28, height: 28)
+                .frame(width: 20, height: 18)
                 .background(DS.surface2)
-                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
                         .strokeBorder(DS.line, lineWidth: 1)
                 )
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
-        .frame(width: 28, height: 28)
+        .frame(width: 20, height: 18)
         .help(Text(LocalizedStringKey("add_projects")))
     }
 
-    /// 项目设置菜单：点击行首应用图标切换打开方式。
-    private func projectSetting(_ item: ProjectModel) -> some View {
-        ZStack {
-            Menu {
-                Text(LocalizedStringKey("menu_current_application"))
-                Button(action: {
-                    item.open()
-                }) {
-                    Image(nsImage: item.applicationIcon)
-                    Text(item.applicationName)
-                }
-
-                if dataManager.applications.count >= 2 {
-                    Text(LocalizedStringKey("menu_available_applications"))
-                    ForEach(dataManager.applications.filter { $0.path != item.applicationPath }, id: \.path) { app in
-                        appButton(app) {
-                            item.open(app.path)
-                        }
-                    }
-                }
-            } label: {
-                Image(nsImage: item.applicationIcon)
-            }
-            .frame(width: 22, height: 22)
-            .clipped()
-            .cornerRadius(DS.iconRadius)
-            Image(nsImage: item.applicationIcon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 24, height: 24)
-                .allowsHitTesting(false)
+    private func appButton(_ app: ApplicationModel, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(nsImage: app.icon)
+            Text(app.name)
         }
-        .frame(width: 24, height: 24)
-        .clipShape(RoundedRectangle(cornerRadius: DS.iconRadius, style: .continuous))
-        .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
+    }
+
+    // MARK: - 格式化
+
+    /// 父目录，`~` 缩写。
+    private func parentPath(_ path: String) -> String {
+        ((path as NSString).deletingLastPathComponent as NSString).abbreviatingWithTildeInPath
+    }
+
+    /// 紧凑相对时间：2h / 3d / 2w / 1mo。
+    private func relativeShort(_ date: Date?) -> String {
+        guard let date else { return "—" }
+        let delta = -date.timeIntervalSinceNow
+        guard delta > 0 else { return "0m" }
+        if delta < 3600 { return "\(max(1, Int(delta / 60)))m" }
+        if delta < 86_400 { return "\(Int(delta / 3600))h" }
+        if delta < 604_800 { return "\(Int(delta / 86_400))d" }
+        if delta < 2_592_000 { return "\(Int(delta / 604_800))w" }
+        return "\(Int(delta / 2_592_000))mo"
     }
 }
 

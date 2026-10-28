@@ -127,6 +127,24 @@ struct GlassBorder: View {
     }
 }
 
+/// 异步字段占位条：数值算好之前先占住宽度，避免布局跳动。
+struct SkeletonBar: View {
+    var width: CGFloat = 28
+    @State private var dim = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 2, style: .continuous)
+            .fill(DS.surface2)
+            .frame(width: width, height: 7)
+            .opacity(dim ? 0.4 : 1)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                    dim = true
+                }
+            }
+    }
+}
+
 /// 标题栏拖动区。
 ///
 /// `isMovableByWindowBackground` 只对未被内容消费的背景生效，

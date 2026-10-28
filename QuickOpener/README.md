@@ -19,8 +19,11 @@ QuickOpener 是一个 macOS 菜单栏应用，用于快速打开项目或文件�
 - 应用入口 / 窗口管理：`QuickOpenerApp.swift`
 - 菜单栏图标、菜单与设置窗口：`AppDelegate+StatusItem.swift`
 - 快捷键注册与键盘监听（↑↓ / Enter / ⌘1~9 / Esc）：`AppDelegate+Keyboard.swift`
-- 主界面（项目列表、过滤、打开、上下文菜单）：`ContentView.swift`
-- 设置界面（登录项、语言、快捷键、数据导入导出）：`SettingsView.swift`
+- 主界面（输入行 / 当前项横条 / 五列列表 / 底栏）：`ContentView.swift`
+- 设置界面（外观、登录项、语言、快捷键、数据导入导出）：`SettingsView.swift`
+- 视觉规范（圆角、双主题色板、毛玻璃、骨架条、键帽）：`DesignSystem.swift`
+- 外观设置（主题色 + 亮/暗/跟随系统）：`AccentTheme.swift`
+- 项目巡检（目录大小与文件数异步统计、Git 分支读取）：`ProjectInspector.swift`
 - 数据管理（加载/保存/增删项目与应用、缓存重置）：`DataManager/DataManager.swift`
 - 模型：
   - `DataManager/ApplicationModel.swift`（ApplicationModel）
@@ -33,7 +36,8 @@ QuickOpener 是一个 macOS 菜单栏应用，用于快速打开项目或文件�
 - 打开/切换项目窗口：Option + Z（可在设置中修改）
 - 关闭窗口：Esc（隐藏窗口并保留状态，下次按快捷键直接复用）
 - 在项目窗口（纯键盘操作）：搜索框自动获得焦点，打字过滤 → `↑`/`↓` 切换选中 → `Enter` 打开选中项 → `Esc` 关闭；`⌘1`~`⌘9` 直接打开对应序号
-- 在项目窗口（鼠标）：点击行打开、垃圾桶图标删除、左侧应用图标弹出可选应用菜单；鼠标悬停会同步键盘选中项
+- 在项目窗口（鼠标）：点击行打开、悬停行尾出现垃圾桶删除、点击横条右侧的应用标签切换打开方式；鼠标悬停会同步键盘选中项
+- 当前项横条：显示图标、名称、完整路径、打开方式，以及「最近打开 / 次数 / 大小 / Git 分支」四项指标（大小与分支异步读取，未就绪时显示占位条）
 - 添加项目：`+` 菜单中的「添加项目…」（重复路径自动跳过）
 - 右键项目：在 Finder 中显示 / 复制路径 / 默认打开方式（子菜单）/ 从列表移除
 - 添加/删除/选择应用：`+` 菜单中的「添加应用」与「删除应用」（内置 Finder 不可删）

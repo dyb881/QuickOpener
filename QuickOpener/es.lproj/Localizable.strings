@@ -83,3 +83,9 @@
 "appearance_system" = "Seguir el sistema";
 "appearance_light" = "Claro";
 "appearance_dark" = "Oscuro";
+
+/* 当前项横条指标 */
+"kpi_recent" = "Reciente";
+"kpi_count" = "Aperturas";
+"kpi_size" = "Tamaño";
+"kpi_branch" = "Rama";

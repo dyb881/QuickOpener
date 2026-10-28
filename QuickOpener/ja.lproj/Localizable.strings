@@ -83,3 +83,9 @@
 "appearance_system" = "システムに従う";
 "appearance_light" = "ライト";
 "appearance_dark" = "ダーク";
+
+/* 当前项横条指标 */
+"kpi_recent" = "最終使用";
+"kpi_count" = "回数";
+"kpi_size" = "サイズ";
+"kpi_branch" = "ブランチ";

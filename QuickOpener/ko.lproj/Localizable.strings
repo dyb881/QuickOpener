@@ -85,3 +85,9 @@
 "appearance_system" = "시스템 설정 따르기";
 "appearance_light" = "라이트";
 "appearance_dark" = "다크";
+
+/* 当前项横条指标 */
+"kpi_recent" = "최근 사용";
+"kpi_count" = "사용 횟수";
+"kpi_size" = "크기";
+"kpi_branch" = "브랜치";

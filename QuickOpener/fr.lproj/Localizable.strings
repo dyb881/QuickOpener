@@ -83,3 +83,9 @@
 "appearance_system" = "Suivre le système";
 "appearance_light" = "Clair";
 "appearance_dark" = "Sombre";
+
+/* 当前项横条指标 */
+"kpi_recent" = "Récent";
+"kpi_count" = "Ouvertures";
+"kpi_size" = "Taille";
+"kpi_branch" = "Branche";
