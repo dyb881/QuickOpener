@@ -326,7 +326,7 @@ struct ContentView: View {
                 }
             } else {
                 ScrollViewReader { proxy in
-                    ScrollView {
+                    SlimScrollView(accent: theme.accent) {
                         LazyVStack(spacing: 0) {
                             ForEach(Array(dataManager.renderProjects.enumerated()), id: \.element.path) { index, item in
                                 projectRow(item, index: index)
@@ -335,7 +335,6 @@ struct ContentView: View {
                         }
                         .padding(.horizontal, 18)
                     }
-                    .scrollIndicators(.automatic)
                     .onChange(of: dataManager.selectedProject?.path) { _, newPath in
                         guard let newPath else { return }
                         withAnimation(.easeInOut(duration: 0.1)) {

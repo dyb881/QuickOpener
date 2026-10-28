@@ -229,3 +229,84 @@ struct WindowBackdropView: View {
         }
     }
 }
+
+
+// MARK: - 细身滚动条
+
+/// 滚动位置度量。
+private struct SlimScrollMetrics: Equatable {
+    var contentHeight: CGFloat = 0
+    var offsetY: CGFloat = 0
+}
+
+private struct SlimScrollMetricsKey: PreferenceKey {
+    static var defaultValue = SlimScrollMetrics()
+    static func reduce(value: inout SlimScrollMetrics, nextValue: () -> SlimScrollMetrics) {
+        value = nextValue()
+    }
+}
+
+/// 隐藏系统滚动条，用主题色画一条 3.5pt 胶囊。
+///
+/// 系统滚动条（overlay 样式）是浅灰轨道，铺在深色玻璃背景上会突兀，
+/// 而且在 `scrollIndicators(.automatic)` 下只随滚动短暂出现，位置感很弱。
+struct SlimScrollView<Content: View>: View {
+    var accent: Color
+    @ViewBuilder var content: Content
+
+    @State private var contentHeight: CGFloat = 1
+    @State private var visibleHeight: CGFloat = 1
+    @State private var offsetY: CGFloat = 0
+    @State private var isHovering = false
+
+    private static var space: String { "slimScrollSpace" }
+
+    /// 滑块高度、可移动距离、当前进度；内容未超出时返回 nil（不画）。
+    private var thumb: (height: CGFloat, travel: CGFloat, progress: CGFloat)? {
+        guard contentHeight > visibleHeight + 0.5 else { return nil }
+        let visibleRatio = visibleHeight / contentHeight
+        let height = max(28, visibleHeight * visibleRatio)
+        let travel = max(visibleHeight - height, 0)
+        let maxScroll = max(contentHeight - visibleHeight, 1)
+        let progress = min(max(offsetY / maxScroll, 0), 1)
+        return (height, travel, progress)
+    }
+
+    var body: some View {
+        GeometryReader { outer in
+            ScrollView(.vertical, showsIndicators: false) {
+                content
+                    .background(
+                        GeometryReader { inner in
+                            Color.clear.preference(
+                                key: SlimScrollMetricsKey.self,
+                                value: SlimScrollMetrics(
+                                    contentHeight: inner.size.height,
+                                    offsetY: -inner.frame(in: .named(Self.space)).minY
+                                )
+                            )
+                        }
+                    )
+            }
+            .coordinateSpace(name: Self.space)
+            .onPreferenceChange(SlimScrollMetricsKey.self) { metrics in
+                contentHeight = max(metrics.contentHeight, 1)
+                offsetY = metrics.offsetY
+                visibleHeight = max(outer.size.height, 1)
+            }
+            .overlay(alignment: .trailing) {
+                if let thumb {
+                    Capsule()
+                        .fill(accent.opacity(isHovering ? 0.7 : 0.34))
+                        .frame(width: 3.5, height: thumb.height)
+                        .offset(y: thumb.progress * thumb.travel)
+                        .padding(.trailing, 3)
+                        .allowsHitTesting(false)
+                        .animation(.easeOut(duration: 0.15), value: isHovering)
+                }
+            }
+            .onHover { isHovering = $0 }
+        }
+    }
+}
+

@@ -32,6 +32,8 @@ enum AccentTheme: String, CaseIterable, Identifiable {
     case purple
     case orange
     case pink
+    /// 深藏青，深色背景下比 blue 更沉。
+    case navy
     /// 用户自定义色，取 `ThemeManager.customAccent`。
     case custom
 
@@ -50,6 +52,7 @@ enum AccentTheme: String, CaseIterable, Identifiable {
         case .purple: return Color(red: 0.690, green: 0.486, blue: 1.000)
         case .orange: return Color(red: 1.000, green: 0.722, blue: 0.420)
         case .pink:   return Color(red: 1.000, green: 0.494, blue: 0.659)
+        case .navy:   return Color(red: 0.235, green: 0.325, blue: 0.647)
         }
     }
 }
@@ -94,9 +97,13 @@ final class ThemeManager: ObservableObject {
     @Published var customAccent: Color {
         didSet {
             Self.saveCustomAccent(customAccent)
-            if theme != .custom { theme = .custom }
+            // init 阶段 theme 还没就绪，此时读它会在启动时崩掉
+            if hasLoadedPreferences, theme != .custom { theme = .custom }
         }
     }
+
+    /// init 里给 customAccent 赋值会走到 didSet，用这个标记跳过那段逻辑。
+    private var hasLoadedPreferences = false
 
     /// 未设置过自定义色时的默认值（中性灰蓝，不抢眼）。
     static let defaultCustomAccent = Color(red: 0.541, green: 0.576, blue: 0.651)
@@ -134,6 +141,7 @@ final class ThemeManager: ObservableObject {
         backdrop = savedBackdrop.flatMap(WindowBackdrop.init(rawValue:)) ?? .frosted
         let savedOpacity = UserDefaults.standard.object(forKey: Self.opacityKey) as? Double
         windowOpacity = savedOpacity ?? 1.0
+        hasLoadedPreferences = true
     }
 
     /// 当前生效的强调色（`system` 时回退到系统强调色）。
