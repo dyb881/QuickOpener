@@ -107,6 +107,21 @@ extension AppDelegate {
             // （NSGenericException: more Update Constraints passes than there are views），直接崩溃。
             // 窗口尺寸固定，内容超长时由 SettingsView 内部的 ScrollView 处理。
             newWindow.contentViewController = hostingController
+
+            // 材质必须垫在 hosting view 的最底层：
+            // titlebarAppearsTransparent 之后，SwiftUI 的 .background 仍然铺不到
+            // 标题栏那一条，会在窗口顶部留出一条透明的空白。
+            // 挂成 contentView 的子视图并设 autoresizingMask，就能覆盖整个窗口。
+            let backdropView = NSVisualEffectView()
+            backdropView.material = ThemeManager.shared.backdrop.material ?? .underWindowBackground
+            backdropView.blendingMode = .behindWindow
+            backdropView.state = .active
+            backdropView.isEmphasized = false
+            backdropView.alphaValue = ThemeManager.shared.windowOpacity
+            backdropView.identifier = NSUserInterfaceItemIdentifier("settingsBackdrop")
+            backdropView.autoresizingMask = [.width, .height]
+            backdropView.frame = hostingController.view.bounds
+            hostingController.view.addSubview(backdropView, positioned: .below, relativeTo: nil)
             newWindow.delegate = self
             newWindow.isReleasedWhenClosed = false
             newWindow.isMovableByWindowBackground = true // 允许通过背景拖动窗口

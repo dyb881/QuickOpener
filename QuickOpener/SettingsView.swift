@@ -97,7 +97,9 @@ struct SettingsView: View {
         }
         .frame(width: 760)
         .frame(minHeight: 300, maxHeight: .infinity) // 高度跟随窗口（含标题栏区域），背景才能铺满
-        .background(WindowBackdropView(backdrop: theme.backdrop, opacity: theme.windowOpacity))
+        // 材质由 AppDelegate 在 contentView 底层铺（才能覆盖标题栏），
+        // 这里只叠渐变，否则会变成两层材质、遮挡过重
+        .background(DS.windowGradient.opacity(theme.backdrop.overlay(userOpacity: theme.windowOpacity)))
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }

@@ -88,7 +88,10 @@ final class ThemeManager: ObservableObject {
     /// 窗口背景不透明度（0.35 最透 ~ 1.0 最实）。
     /// 只影响背景层，文字与控件不受影响。
     @Published var windowOpacity: Double {
-        didSet { UserDefaults.standard.set(windowOpacity, forKey: Self.opacityKey) }
+        didSet {
+            UserDefaults.standard.set(windowOpacity, forKey: Self.opacityKey)
+            refreshWindowMaterials()
+        }
     }
 
     init() {
@@ -114,6 +117,22 @@ final class ThemeManager: ObservableObject {
         for window in NSApp.windows {
             window.isOpaque = false
             window.backgroundColor = .clear
+        }
+        refreshWindowMaterials()
+    }
+
+    /// 同步偏好设置窗口里那块 AppKit 材质层。
+    ///
+    /// 主窗口的材质由 SwiftUI 的 `VisualEffectBackground` 自己更新，
+    /// 设置窗口的材质是手动挂的（为了覆盖标题栏），需要在这里刷。
+    func refreshWindowMaterials() {
+        for window in NSApp.windows {
+            for subview in window.contentView?.subviews ?? [] {
+                guard let effect = subview as? NSVisualEffectView,
+                      effect.identifier?.rawValue == "settingsBackdrop" else { continue }
+                effect.material = backdrop.material ?? .underWindowBackground
+                effect.alphaValue = windowOpacity
+            }
         }
     }
 
