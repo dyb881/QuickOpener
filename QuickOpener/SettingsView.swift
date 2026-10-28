@@ -34,6 +34,7 @@ struct SettingsView: View {
     /// 导入结果摘要，非空时弹提示。
     @State private var importSummary: String?
     @State private var showClearCacheAlert = false
+    @State private var selectedTab: SettingsTab = .general
 
     // 支持的语言选项
     private let languages = [
@@ -90,216 +91,11 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 15) {
-                // 通用
-                section("settings_general") {
-                    card {
-                        HStack {
-                            Text(LocalizedStringKey("settings_launch_at_login"))
-                                .font(.system(size: 12.5))
-                                .foregroundStyle(DS.text)
-                            Spacer(minLength: 12)
-                            Toggle("", isOn: $launchAtLogin)
-                                .labelsHidden()
-                                .toggleStyle(.switch)
-                                .tint(theme.accent)
-                                .onChange(of: launchAtLogin) { _, enabled in
-                                    updateLaunchAtLogin(enabled)
-                                }
-                        }
-                    }
-                }
-
-                // 外观：界面模式 + 主题色
-                section("settings_appearance") {
-                    card {
-                        VStack(spacing: 10) {
-                            HStack {
-                                Text(LocalizedStringKey("appearance_mode"))
-                                    .font(.system(size: 12.5))
-                                    .foregroundStyle(DS.text)
-                                Spacer(minLength: 12)
-                                Picker("", selection: $theme.appearance) {
-                                    ForEach(AppearanceMode.allCases) { mode in
-                                        Text(LocalizedStringKey(mode.localizedKey)).tag(mode)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                                .labelsHidden()
-                                .frame(width: 216)
-                            }
-
-                            Rectangle()
-                                .fill(DS.line)
-                                .frame(height: 1)
-
-                            HStack {
-                                Text(LocalizedStringKey("theme_color"))
-                                    .font(.system(size: 12.5))
-                                    .foregroundStyle(DS.text)
-                                Spacer(minLength: 12)
-                                HStack(spacing: 10) {
-                                    ForEach(AccentTheme.allCases) { item in
-                                        themeSwatch(item)
-                                    }
-                                }
-                            }
-
-                            Rectangle()
-                                .fill(DS.line)
-                                .frame(height: 1)
-
-                            HStack {
-                                Text(LocalizedStringKey("label_backdrop"))
-                                    .font(.system(size: 12.5))
-                                    .foregroundStyle(DS.text)
-                                Spacer(minLength: 12)
-                                Picker("", selection: $theme.backdrop) {
-                                    ForEach(WindowBackdrop.allCases) { item in
-                                        Text(LocalizedStringKey(item.localizedKey)).tag(item)
-                                    }
-                                }
-                                .pickerStyle(.segmented)
-                                .labelsHidden()
-                                .frame(width: 216)
-                            }
-
-                            Rectangle()
-                                .fill(DS.line)
-                                .frame(height: 1)
-
-                            HStack(spacing: 10) {
-                                Text(LocalizedStringKey("label_opacity"))
-                                    .font(.system(size: 12.5))
-                                    .foregroundStyle(DS.text)
-                                Spacer(minLength: 8)
-                                Slider(value: $theme.windowOpacity, in: 0.35...1.0)
-                                    .controlSize(.small)
-                                    .tint(theme.accent)
-                                    .frame(width: 176)
-                                Text(verbatim: "\(Int((theme.windowOpacity * 100).rounded()))%")
-                                    .font(DS.mono(11))
-                                    .foregroundStyle(DS.text3)
-                                    .frame(width: 40, alignment: .trailing)
-                            }
-                        }
-                    }
-                }
-
-                // 语言
-                section("settings_language") {
-                    card {
-                        VStack(alignment: .leading, spacing: 9) {
-                            HStack {
-                                Text(LocalizedStringKey("label_language"))
-                                    .font(.system(size: 12.5))
-                                    .foregroundStyle(DS.text)
-                                Spacer(minLength: 12)
-                                Picker("", selection: $appLanguage) {
-                                    ForEach(languages, id: \.1) { name, code in
-                                        Text(LocalizedStringKey(name)).tag(code)
-                                    }
-                                }
-                                .labelsHidden()
-                                .frame(width: 216)
-                                .onChange(of: appLanguage) { _, language in
-                                    // AppleLanguages UserDefaults 是设置每应用语言的唯一方案
-                                    UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
-                                }
-                            }
-                            HStack {
-                                Spacer(minLength: 0)
-                                Button(LocalizedStringKey("restart_takes_effect")) {
-                                    restartApp()
-                                }
-                                .controlSize(.small)
-                            }
-                        }
-                    }
-                }
-
-                // 快捷键
-                section("settings_shortcuts") {
-                    card {
-                        HStack {
-                            Text(LocalizedStringKey("label_shortcut"))
-                                .font(.system(size: 12.5))
-                                .foregroundStyle(DS.text)
-                            Spacer(minLength: 12)
-                            KeyboardShortcuts.Recorder(for: .toggleProjectOpener)
-                            Button(LocalizedStringKey("button_reset_shortcut")) {
-                                KeyboardShortcuts.reset(.toggleProjectOpener)
-                            }
-                            .controlSize(.small)
-                        }
-                    }
-                }
-
-                // 数据
-                section("settings_data") {
-                    card {
-                        VStack(alignment: .leading, spacing: 9) {
-                            HStack(spacing: 8) {
-                                Button(LocalizedStringKey("button_export_projects")) {
-                                    exportProjects()
-                                }
-                                .controlSize(.small)
-                                Button(LocalizedStringKey("button_import_projects")) {
-                                    importProjects()
-                                }
-                                .controlSize(.small)
-                                Spacer(minLength: 0)
-                            }
-
-                            Rectangle()
-                                .fill(DS.line)
-                                .frame(height: 1)
-
-                            HStack(spacing: 8) {
-                                Button(LocalizedStringKey("menu_reset_cache")) {
-                                    showClearCacheAlert = true
-                                }
-                                .controlSize(.small)
-                                Spacer(minLength: 0)
-                            }
-                        }
-                    }
-                }
-
-                // 关于
-                section("settings_about") {
-                    card {
-                        HStack(spacing: 13) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                                    .fill(DS.iconPlate)
-                                Image(systemName: "rectangle.on.rectangle.angled")
-                                    .font(.system(size: 19, weight: .light))
-                                    .foregroundStyle(theme.accent)
-                            }
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .strokeBorder(DS.line2, lineWidth: 1)
-                            )
-
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(verbatim: "QuickOpener \(appVersion)")
-                                    .font(.system(size: 12.5, weight: .semibold))
-                                    .foregroundStyle(DS.text)
-                                Text(LocalizedStringKey("app_description_short"))
-                                    .font(.system(size: 10.5))
-                                    .foregroundStyle(DS.text3)
-                            }
-                            Spacer(minLength: 0)
-                        }
-                    }
-                }
-            }
-            .padding(22)
+        HStack(spacing: 0) {
+            sidebar
+            contentPane
         }
-        .frame(width: 560, height: 800)
+        .frame(width: 760, height: 300)
         .background(WindowBackdropView(backdrop: theme.backdrop, opacity: theme.windowOpacity))
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
@@ -331,6 +127,307 @@ struct SettingsView: View {
             }
         } message: {
             Text(LocalizedStringKey("reset_cache_confirm_message"))
+        }
+    }
+
+
+    // MARK: - 侧边栏
+
+    /// 设置页签。侧边栏与内容区共用同一份枚举，避免两处顺序不一致。
+    private enum SettingsTab: String, CaseIterable, Identifiable {
+        case general, appearance, language, shortcuts, data, about
+
+        var id: String { rawValue }
+
+        var titleKey: String {
+            switch self {
+            case .general:   return "settings_general"
+            case .appearance: return "settings_appearance"
+            case .language:  return "settings_language"
+            case .shortcuts: return "settings_shortcuts"
+            case .data:      return "settings_data"
+            case .about:     return "settings_about"
+            }
+        }
+
+        var systemImage: String {
+            switch self {
+            case .general:   return "gearshape"
+            case .appearance: return "paintpalette"
+            case .language:  return "globe"
+            case .shortcuts: return "command"
+            case .data:      return "externaldrive"
+            case .about:     return "info.circle"
+            }
+        }
+    }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            ForEach(SettingsTab.allCases) { tab in
+                sidebarRow(tab)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 8)
+        .padding(.top, 10)
+        .frame(width: 172)
+        .frame(maxHeight: .infinity)
+        .background(DS.surface)
+        .overlay(alignment: .trailing) {
+            Rectangle()
+                .fill(DS.line)
+                .frame(width: 1)
+        }
+    }
+
+    private func sidebarRow(_ tab: SettingsTab) -> some View {
+        let isSelected = selectedTab == tab
+        return Button {
+            selectedTab = tab
+        } label: {
+            HStack(spacing: 9) {
+                Image(systemName: tab.systemImage)
+                    .font(.system(size: 12, weight: .medium))
+                    .frame(width: 16)
+                Text(LocalizedStringKey(tab.titleKey))
+                    .font(.system(size: 12.5))
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(isSelected ? DS.textStrong : DS.text2)
+            .padding(.horizontal, 9)
+            .frame(height: 30)
+            .background(
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(isSelected ? theme.accent.opacity(0.16) : Color.clear)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - 内容区
+
+    private var contentPane: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 15) {
+                switch selectedTab {
+                case .general:    generalPane
+                case .appearance: appearancePane
+                case .language:   languagePane
+                case .shortcuts:  shortcutsPane
+                case .data:       dataPane
+                case .about:      aboutPane
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - 各页内容
+
+    private var generalPane: some View {
+        section("settings_general") {
+            card {
+                HStack {
+                    Text(LocalizedStringKey("settings_launch_at_login"))
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(DS.text)
+                    Spacer(minLength: 12)
+                    Toggle("", isOn: $launchAtLogin)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                        .tint(theme.accent)
+                        .onChange(of: launchAtLogin) { _, enabled in
+                            updateLaunchAtLogin(enabled)
+                        }
+                }
+            }
+        }
+    }
+
+    private var appearancePane: some View {
+        section("settings_appearance") {
+            card {
+                VStack(spacing: 10) {
+                    HStack {
+                        Text(LocalizedStringKey("appearance_mode"))
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(DS.text)
+                        Spacer(minLength: 12)
+                        Picker("", selection: $theme.appearance) {
+                            ForEach(AppearanceMode.allCases) { mode in
+                                Text(LocalizedStringKey(mode.localizedKey)).tag(mode)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(width: 216)
+                    }
+
+                    Rectangle().fill(DS.line).frame(height: 1)
+
+                    HStack {
+                        Text(LocalizedStringKey("theme_color"))
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(DS.text)
+                        Spacer(minLength: 12)
+                        HStack(spacing: 10) {
+                            ForEach(AccentTheme.allCases) { item in
+                                themeSwatch(item)
+                            }
+                        }
+                    }
+
+                    Rectangle().fill(DS.line).frame(height: 1)
+
+                    HStack {
+                        Text(LocalizedStringKey("label_backdrop"))
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(DS.text)
+                        Spacer(minLength: 12)
+                        Picker("", selection: $theme.backdrop) {
+                            ForEach(WindowBackdrop.allCases) { item in
+                                Text(LocalizedStringKey(item.localizedKey)).tag(item)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(width: 216)
+                    }
+
+                    Rectangle().fill(DS.line).frame(height: 1)
+
+                    HStack(spacing: 10) {
+                        Text(LocalizedStringKey("label_opacity"))
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(DS.text)
+                        Spacer(minLength: 8)
+                        Slider(value: $theme.windowOpacity, in: 0.35...1.0)
+                            .controlSize(.small)
+                            .tint(theme.accent)
+                            .frame(width: 176)
+                        Text(verbatim: "\(Int((theme.windowOpacity * 100).rounded()))%")
+                            .font(DS.mono(11))
+                            .foregroundStyle(DS.text3)
+                            .frame(width: 40, alignment: .trailing)
+                    }
+                }
+            }
+        }
+    }
+
+    private var languagePane: some View {
+        section("settings_language") {
+            card {
+                VStack(alignment: .leading, spacing: 9) {
+                    HStack {
+                        Text(LocalizedStringKey("label_language"))
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(DS.text)
+                        Spacer(minLength: 12)
+                        Picker("", selection: $appLanguage) {
+                            ForEach(languages, id: \.1) { name, code in
+                                Text(LocalizedStringKey(name)).tag(code)
+                            }
+                        }
+                        .labelsHidden()
+                        .frame(width: 216)
+                        .onChange(of: appLanguage) { _, language in
+                            // AppleLanguages UserDefaults 是设置每应用语言的唯一方案
+                            UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
+                        }
+                    }
+                    HStack {
+                        Spacer(minLength: 0)
+                        Button(LocalizedStringKey("restart_takes_effect")) {
+                            restartApp()
+                        }
+                        .controlSize(.small)
+                    }
+                }
+            }
+        }
+    }
+
+    private var shortcutsPane: some View {
+        section("settings_shortcuts") {
+            card {
+                HStack {
+                    Text(LocalizedStringKey("label_shortcut"))
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(DS.text)
+                    Spacer(minLength: 12)
+                    KeyboardShortcuts.Recorder(for: .toggleProjectOpener)
+                    Button(LocalizedStringKey("button_reset_shortcut")) {
+                        KeyboardShortcuts.reset(.toggleProjectOpener)
+                    }
+                    .controlSize(.small)
+                }
+            }
+        }
+    }
+
+    private var dataPane: some View {
+        section("settings_data") {
+            card {
+                VStack(alignment: .leading, spacing: 9) {
+                    HStack(spacing: 8) {
+                        Button(LocalizedStringKey("button_export_projects")) {
+                            exportProjects()
+                        }
+                        .controlSize(.small)
+                        Button(LocalizedStringKey("button_import_projects")) {
+                            importProjects()
+                        }
+                        .controlSize(.small)
+                        Spacer(minLength: 0)
+                    }
+
+                    Rectangle().fill(DS.line).frame(height: 1)
+
+                    HStack(spacing: 8) {
+                        Button(LocalizedStringKey("menu_reset_cache")) {
+                            showClearCacheAlert = true
+                        }
+                        .controlSize(.small)
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+        }
+    }
+
+    private var aboutPane: some View {
+        section("settings_about") {
+            card {
+                HStack(spacing: 13) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 11, style: .continuous)
+                            .fill(DS.iconPlate)
+                        Image(systemName: "rectangle.on.rectangle.angled")
+                            .font(.system(size: 19, weight: .light))
+                            .foregroundStyle(theme.accent)
+                    }
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(DS.line2, lineWidth: 1)
+                    )
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(verbatim: "QuickOpener \(appVersion)")
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(DS.text)
+                        Text(LocalizedStringKey("app_description_short"))
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(DS.text3)
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
         }
     }
 

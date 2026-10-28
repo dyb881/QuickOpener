@@ -70,10 +70,10 @@ extension AppDelegate {
         } else {
             let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
             let windowRect = NSRect(
-                x: screenFrame.midX - 280,
-                y: screenFrame.midY - 350,
-                width: 560,
-                height: 800
+                x: screenFrame.midX - 380,
+                y: screenFrame.midY - 150,
+                width: 760,
+                height: 300
             )
             let newWindow = NSWindow(
                 contentRect: windowRect,
