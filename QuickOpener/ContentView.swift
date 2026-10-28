@@ -73,7 +73,7 @@ struct ContentView: View {
     /// 自绘标题栏：左侧让出窗口红绿灯位置，右侧显示当前唤起快捷键。
     private var titleBar: some View {
         HStack(spacing: 0) {
-            Spacer(minLength: 78)
+            Spacer(minLength: 0)
             Text(currentShortcut)
                 .font(DS.mono(10))
                 .foregroundStyle(DS.text3)

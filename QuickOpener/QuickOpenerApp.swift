@@ -165,8 +165,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         newWindow.delegate = self
         newWindow.isReleasedWhenClosed = false // 窗口关闭时保留引用
         newWindow.isMovableByWindowBackground = true // 允许通过背景拖动窗口
-        newWindow.standardWindowButton(.miniaturizeButton)?.isEnabled = false // 禁用最小化按钮
-        newWindow.standardWindowButton(.zoomButton)?.isEnabled = false // 禁用缩放按钮
+        // 隐藏左上角红绿灯：纯菜单栏交互，关闭用 Esc，移动靠拖动背景
+        newWindow.standardWindowButton(.closeButton)?.isHidden = true
+        newWindow.standardWindowButton(.miniaturizeButton)?.isHidden = true
+        newWindow.standardWindowButton(.zoomButton)?.isHidden = true
         newWindow.isFloatingPanel = true // 设置面板为浮动层级
         newWindow.becomesKeyOnlyIfNeeded = true // 仅在需要时成为 key（如 Sheet 模态），兼容 beginSheetModal
         newWindow.title = "QuickOpener"

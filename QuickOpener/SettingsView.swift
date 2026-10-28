@@ -248,8 +248,6 @@ struct SettingsView: View {
                 )
             }
         )
-        .clipShape(RoundedRectangle(cornerRadius: DS.radius, style: .continuous))
-        .overlay(GlassBorder())
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }
