@@ -16,6 +16,9 @@ struct SettingsView: View {
     // "" 代表系统默认
     @AppStorage("appLanguage") private var appLanguage: String = ""
 
+    /// 主题强调色，选择后立即生效并持久化。
+    @EnvironmentObject private var theme: ThemeManager
+
     /// 数据管理，用于导入导出项目列表。
     @EnvironmentObject private var dataManager: DataManager
 
@@ -44,6 +47,47 @@ struct SettingsView: View {
         ("spanish", "es"),
     ]
 
+    /// 主题色色块：选中项外圈加粗并打勾，悬停显示色名。
+    @ViewBuilder
+    private func themeSwatch(_ item: AccentTheme) -> some View {
+        let isSelected = theme.theme == item
+        Button {
+            theme.theme = item
+        } label: {
+            ZStack {
+                if let preset = item.presetColor {
+                    Circle().fill(preset)
+                } else {
+                    // 跟随系统：多色环表示「自动」
+                    Circle()
+                        .fill(AngularGradient(
+                            colors: [.red, .orange, .yellow, .green, .blue, .purple, .red],
+                            center: .center
+                        ))
+                        .opacity(0.9)
+                }
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 1, y: 0.5)
+                }
+            }
+            .frame(width: 19, height: 19)
+            .overlay(Circle().strokeBorder(Color.primary.opacity(0.18), lineWidth: 1))
+            .overlay(
+                Circle()
+                    .strokeBorder(Color.primary, lineWidth: 1.5)
+                    .scaleEffect(1.28)
+                    .opacity(isSelected ? 1 : 0)
+            )
+            .padding(3)
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .help(Text(LocalizedStringKey(item.localizedKey)))
+    }
+
     var body: some View {
         // Form 在固定高度下不会自己滚动，内容超长会被裁掉；
         // 用 ScrollView 包住让它可滚动，窗口尺寸保持固定
@@ -55,6 +99,18 @@ struct SettingsView: View {
                 }
                 .onChange(of: launchAtLogin) { _, enabled in
                     updateLaunchAtLogin(enabled)
+                }
+            }.padding(.vertical, 5)
+
+            Section(header: Text(LocalizedStringKey("settings_appearance")).font(.headline)) {
+                HStack {
+                    Text(LocalizedStringKey("theme_color"))
+                    Spacer()
+                    HStack(spacing: 7) {
+                        ForEach(AccentTheme.allCases) { item in
+                            themeSwatch(item)
+                        }
+                    }
                 }
             }.padding(.vertical, 5)
 
@@ -110,7 +166,8 @@ struct SettingsView: View {
             }
             .padding()
         }
-        .frame(width: 520, height: 620)
+        .frame(width: 520, height: 700)
+        .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }
         } message: {
@@ -208,4 +265,5 @@ struct SettingsView: View {
     SettingsView()
         .modelContainer(QuickOpenerApp.sharedModelContainer)
         .environmentObject(QuickOpenerApp.dataManager)
+        .environmentObject(ThemeManager.shared)
 }

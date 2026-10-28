@@ -62,3 +62,13 @@
 "import_result_format" = "%1$d ajoutés, %2$d ignorés";
 "launch_at_login_failed_title" = "Impossible de modifier l'élément de connexion";
 "launch_at_login_failed_message" = "Ajoutez QuickOpener manuellement dans Réglages Système → Général → Ouverture.";
+
+/* 主题色设置 */
+"settings_appearance" = "Apparence";
+"theme_color" = "Couleur d'accentuation";
+"theme_system" = "Suivre le système";
+"theme_mint" = "Menthe";
+"theme_blue" = "Bleu";
+"theme_purple" = "Violet";
+"theme_orange" = "Orange";
+"theme_pink" = "Rose";

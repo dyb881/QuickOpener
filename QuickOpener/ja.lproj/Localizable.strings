@@ -62,3 +62,13 @@
 "import_result_format" = "%1$d 件追加、%2$d 件スキップ";
 "launch_at_login_failed_title" = "ログイン項目を変更できません";
 "launch_at_login_failed_message" = "「システム設定 → 一般 → ログイン項目」で QuickOpener を手動で追加してください。";
+
+/* 主题色设置 */
+"settings_appearance" = "外観";
+"theme_color" = "アクセントカラー";
+"theme_system" = "システムに従う";
+"theme_mint" = "ミント";
+"theme_blue" = "ブルー";
+"theme_purple" = "パープル";
+"theme_orange" = "オレンジ";
+"theme_pink" = "ピンク";

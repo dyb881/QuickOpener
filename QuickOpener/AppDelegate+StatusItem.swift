@@ -71,9 +71,9 @@ extension AppDelegate {
             let screenFrame = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 800, height: 600)
             let windowRect = NSRect(
                 x: screenFrame.midX - 260,
-                y: screenFrame.midY - 310,
+                y: screenFrame.midY - 350,
                 width: 520,
-                height: 620
+                height: 700
             )
             let newWindow = NSWindow(
                 contentRect: windowRect,
@@ -85,6 +85,7 @@ extension AppDelegate {
                 SettingsView()
                     .modelContainer(QuickOpenerApp.sharedModelContainer)
                     .environmentObject(QuickOpenerApp.dataManager)
+                    .environmentObject(ThemeManager.shared)
             )
             // 不要使用 sizingOptions = .preferredContentSize：
             // SwiftUI 内容尺寸与窗口尺寸会互相驱动，形成 Update Constraints 死循环

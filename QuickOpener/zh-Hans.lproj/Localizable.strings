@@ -62,3 +62,13 @@
 "import_result_format" = "新增 %1$d 个项目，跳过 %2$d 个";
 "launch_at_login_failed_title" = "无法设置登录项";
 "launch_at_login_failed_message" = "请在「系统设置 → 通用 → 登录项」中手动添加 QuickOpener。";
+
+/* 主题色设置 */
+"settings_appearance" = "外观";
+"theme_color" = "主题色";
+"theme_system" = "跟随系统";
+"theme_mint" = "薄荷青";
+"theme_blue" = "蓝色";
+"theme_purple" = "紫色";
+"theme_orange" = "橙色";
+"theme_pink" = "粉色";

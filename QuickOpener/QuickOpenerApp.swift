@@ -42,6 +42,7 @@ struct QuickOpenerApp: App {
             SettingsView()
                 .modelContainer(QuickOpenerApp.sharedModelContainer)
                 .environmentObject(QuickOpenerApp.dataManager)
+                .environmentObject(ThemeManager.shared)
         }
     }
 }
@@ -149,6 +150,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             ContentView()
                 .modelContainer(QuickOpenerApp.sharedModelContainer)
                 .environmentObject(QuickOpenerApp.dataManager)
+                .environmentObject(ThemeManager.shared)
         )
         newWindow.contentViewController = hostingController
         newWindow.collectionBehavior = [.managed, .moveToActiveSpace]

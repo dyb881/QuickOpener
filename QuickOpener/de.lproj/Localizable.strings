@@ -62,3 +62,13 @@
 "import_result_format" = "%1$d hinzugefügt, %2$d übersprungen";
 "launch_at_login_failed_title" = "Login-Objekt nicht änderbar";
 "launch_at_login_failed_message" = "Bitte QuickOpener manuell unter Systemeinstellungen → Allgemein → Anmeldeobjekte hinzufügen.";
+
+/* 主题色设置 */
+"settings_appearance" = "Darstellung";
+"theme_color" = "Akzentfarbe";
+"theme_system" = "Systemeinstellung folgen";
+"theme_mint" = "Minze";
+"theme_blue" = "Blau";
+"theme_purple" = "Violett";
+"theme_orange" = "Orange";
+"theme_pink" = "Pink";

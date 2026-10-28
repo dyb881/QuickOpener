@@ -62,3 +62,13 @@
 "import_result_format" = "%1$d agregados, %2$d omitidos";
 "launch_at_login_failed_title" = "No se puede cambiar el ítem de inicio";
 "launch_at_login_failed_message" = "Agrega QuickOpener manualmente en Ajustes del Sistema → General → Ítems de inicio.";
+
+/* 主题色设置 */
+"settings_appearance" = "Apariencia";
+"theme_color" = "Color de acento";
+"theme_system" = "Seguir el sistema";
+"theme_mint" = "Menta";
+"theme_blue" = "Azul";
+"theme_purple" = "Púrpura";
+"theme_orange" = "Naranja";
+"theme_pink" = "Rosa";

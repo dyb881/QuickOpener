@@ -15,6 +15,9 @@ struct ContentView: View {
     /// 环境对象，引用 `DataManager` 来管理项目和应用程序数据。
     @EnvironmentObject private var dataManager: DataManager
 
+    /// 主题强调色，跟随设置里的选择即时变化。
+    @EnvironmentObject private var theme: ThemeManager
+
     /// 状态变量，跟踪当前鼠标悬停的项目路径。
     @State private var hoveredPath: String?
 
@@ -29,6 +32,7 @@ struct ContentView: View {
             projectsList(selectedPath: dataManager.selectedProject?.path)
         }
         .frame(width: 300, height: 500)
+        .tint(theme.accent)
         .alert(
             LocalizedStringKey("project_missing_title"),
             isPresented: Binding(
@@ -306,10 +310,10 @@ struct ContentView: View {
     /// 行背景：键盘选中 > 鼠标悬停 > 透明。
     private func rowBackground(for item: ProjectModel, selectedPath: String?) -> Color {
         if selectedPath == item.path {
-            return Color.accentColor.opacity(0.18)
+            return theme.accent.opacity(0.18)
         }
         if hoveredPath == item.path {
-            return Color.accentColor.opacity(0.08)
+            return theme.accent.opacity(0.08)
         }
         return Color.clear
     }
@@ -319,4 +323,5 @@ struct ContentView: View {
     ContentView()
         .modelContainer(QuickOpenerApp.sharedModelContainer)
         .environmentObject(QuickOpenerApp.dataManager)
+        .environmentObject(ThemeManager.shared)
 }

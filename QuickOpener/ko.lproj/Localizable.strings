@@ -64,3 +64,13 @@
 "import_result_format" = "%1$d개 추가, %2$d개 건너뜀";
 "launch_at_login_failed_title" = "로그인 항목을 변경할 수 없음";
 "launch_at_login_failed_message" = "시스템 설정 → 일반 → 로그인 항목에서 QuickOpener를 직접 추가하세요.";
+
+/* 主题色设置 */
+"settings_appearance" = "모양";
+"theme_color" = "강조 색상";
+"theme_system" = "시스템 설정 따르기";
+"theme_mint" = "민트";
+"theme_blue" = "블루";
+"theme_purple" = "퍼플";
+"theme_orange" = "오렌지";
+"theme_pink" = "핑크";
