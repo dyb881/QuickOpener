@@ -269,11 +269,11 @@ struct ContentView: View {
         Menu {
             Text(LocalizedStringKey("menu_current_application"))
             Button {
-                item.open()
             } label: {
                 Image(nsImage: item.applicationIcon)
                 Text(item.applicationName)
             }
+            .disabled(true) // 只作标记：用当前应用打开＝单击行，不在这里重复一次
 
             if dataManager.applications.count >= 2 {
                 Text(LocalizedStringKey("menu_available_applications"))
@@ -414,18 +414,6 @@ struct ContentView: View {
                 item.open()
             } label: {
                 Label(LocalizedStringKey("context_open"), systemImage: "arrow.up.forward.app")
-            }
-
-            if dataManager.applications.count >= 2 {
-                Menu {
-                    ForEach(dataManager.applications.filter { $0.path != item.applicationPath }, id: \.path) { app in
-                        appButton(app) {
-                            openWith(app.url, project: item)
-                        }
-                    }
-                } label: {
-                    Label(LocalizedStringKey("context_open_with"), systemImage: "square.on.square.dashed")
-                }
             }
 
             Divider()

@@ -33,6 +33,7 @@ struct SettingsView: View {
 
     /// 导入结果摘要，非空时弹提示。
     @State private var importSummary: String?
+    @State private var showClearCacheAlert = false
 
     // 支持的语言选项
     private let languages = [
@@ -197,16 +198,30 @@ struct SettingsView: View {
                 // 数据
                 section("settings_data") {
                     card {
-                        HStack(spacing: 8) {
-                            Button(LocalizedStringKey("button_export_projects")) {
-                                exportProjects()
+                        VStack(alignment: .leading, spacing: 11) {
+                            HStack(spacing: 8) {
+                                Button(LocalizedStringKey("button_export_projects")) {
+                                    exportProjects()
+                                }
+                                .controlSize(.small)
+                                Button(LocalizedStringKey("button_import_projects")) {
+                                    importProjects()
+                                }
+                                .controlSize(.small)
+                                Spacer(minLength: 0)
                             }
-                            .controlSize(.small)
-                            Button(LocalizedStringKey("button_import_projects")) {
-                                importProjects()
+
+                            Rectangle()
+                                .fill(DS.line)
+                                .frame(height: 1)
+
+                            HStack(spacing: 8) {
+                                Button(LocalizedStringKey("menu_reset_cache")) {
+                                    showClearCacheAlert = true
+                                }
+                                .controlSize(.small)
+                                Spacer(minLength: 0)
                             }
-                            .controlSize(.small)
-                            Spacer(minLength: 0)
                         }
                     }
                 }
@@ -235,10 +250,6 @@ struct SettingsView: View {
                                 Text(LocalizedStringKey("app_description_short"))
                                     .font(.system(size: 10.5))
                                     .foregroundStyle(DS.text3)
-                                Text(LocalizedStringKey("app_description_long"))
-                                    .font(.system(size: 10.5))
-                                    .foregroundStyle(DS.text3)
-                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             Spacer(minLength: 0)
                         }
@@ -247,7 +258,7 @@ struct SettingsView: View {
             }
             .padding(22)
         }
-        .frame(width: 520, height: 700)
+        .frame(width: 560, height: 700)
         .background(DS.windowGradient)
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
@@ -271,6 +282,14 @@ struct SettingsView: View {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }
         } message: { summary in
             Text(verbatim: summary)
+        }
+        .alert(LocalizedStringKey("reset_cache_confirm_title"), isPresented: $showClearCacheAlert) {
+            Button(LocalizedStringKey("button_cancel"), role: .cancel) {}
+            Button(LocalizedStringKey("button_clear"), role: .destructive) {
+                dataManager.clearCache()
+            }
+        } message: {
+            Text(LocalizedStringKey("reset_cache_confirm_message"))
         }
     }
 
