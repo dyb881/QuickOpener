@@ -31,7 +31,7 @@ struct ContentView: View {
             listArea
             footBar
         }
-        .frame(width: 680, height: 440)
+        .frame(width: 780, height: 514)
         .background(
             ZStack {
                 VisualEffectBackground()
@@ -85,11 +85,11 @@ struct ContentView: View {
 
             HStack(spacing: 0) {
                 Text(LocalizedStringKey("app_name"))
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(DS.text3)
                 Spacer(minLength: 0)
                 Text(currentShortcut)
-                    .font(DS.mono(10))
+                    .font(DS.mono(11))
                     .foregroundStyle(DS.text3)
                     .padding(.horizontal, 6)
                     .frame(height: 20)
@@ -103,7 +103,7 @@ struct ContentView: View {
             .padding(.horizontal, 14)
             .allowsHitTesting(false) // 让拖动区拿到鼠标事件
         }
-        .frame(height: 28)
+        .frame(height: 30)
     }
 
     // MARK: - 输入行
@@ -111,7 +111,7 @@ struct ContentView: View {
     private var inputRow: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(theme.accent)
 
             TextField(
@@ -120,17 +120,17 @@ struct ContentView: View {
                 prompt: Text(LocalizedStringKey("filter_projects")).foregroundColor(DS.text2)
             )
             .textFieldStyle(.plain)
-            .font(.system(size: 16))
+            .font(.system(size: 18))
             .focused($isFilterFocused)
 
             Text(matchCountText)
-                .font(DS.mono(10.5))
+                .font(DS.mono(11.5))
                 .foregroundStyle(DS.text3)
 
             addProjectButton
         }
-        .padding(.horizontal, 14)
-        .frame(height: 48)
+        .padding(.horizontal, 16)
+        .frame(height: 56)
         .overlay(alignment: .bottom) {
             Rectangle().fill(DS.line).frame(height: 1)
         }
@@ -157,18 +157,18 @@ struct ContentView: View {
                     Image(nsImage: item.applicationIcon)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 40, height: 40)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .frame(width: 44, height: 44)
+                        .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
                         .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.name)
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.system(size: 19, weight: .semibold))
                             .foregroundStyle(DS.textStrong)
                             .lineLimit(1)
                             .truncationMode(.middle)
                         Text((item.path as NSString).abbreviatingWithTildeInPath)
-                            .font(DS.mono(11))
+                            .font(DS.mono(12.5))
                             .foregroundStyle(DS.text3)
                             .lineLimit(1)
                             .truncationMode(.middle)
@@ -178,12 +178,12 @@ struct ContentView: View {
 
                     appChip(item)
                 }
-                .frame(height: 54)
+                .frame(height: 62)
 
                 kpiRow(item)
-                    .frame(height: 53)
+                    .frame(height: 61)
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 18)
             .background(DS.surface)
             .overlay(alignment: .bottom) {
                 LinearGradient(
@@ -246,12 +246,12 @@ struct ContentView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .tracking(0.15)
                 .foregroundStyle(DS.text3)
                 .lineLimit(1)
             value()
-                .font(DS.mono(13))
+                .font(DS.mono(15))
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -260,8 +260,8 @@ struct ContentView: View {
     private var kpiDivider: some View {
         Rectangle()
             .fill(DS.line)
-            .frame(width: 1, height: 26)
-            .padding(.horizontal, 12)
+            .frame(width: 1, height: 30)
+            .padding(.horizontal, 14)
     }
 
     /// 打开方式切换（点击弹出应用菜单）。
@@ -288,13 +288,13 @@ struct ContentView: View {
                 Image(nsImage: item.applicationIcon)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 12, height: 12)
+                    .frame(width: 13, height: 13)
                 Text(item.applicationName)
-                    .font(DS.mono(10))
+                    .font(DS.mono(11))
             }
             .foregroundStyle(DS.text2)
-            .padding(.horizontal, 9)
-            .frame(height: 24)
+            .padding(.horizontal, 10)
+            .frame(height: 26)
             .background(DS.surface2)
             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             .overlay(
@@ -304,7 +304,7 @@ struct ContentView: View {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
-        .frame(height: 24)
+        .frame(height: 26)
         .help(Text(LocalizedStringKey("context_set_default_app")))
     }
 
@@ -327,7 +327,7 @@ struct ContentView: View {
                                     .id(item.path)
                             }
                         }
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 18)
                     }
                     .scrollIndicators(.automatic)
                     .onChange(of: dataManager.selectedProject?.path) { _, newPath in
@@ -348,29 +348,29 @@ struct ContentView: View {
         let isHovered = hoveredPath == item.path
         let isMissing = dataManager.missingPaths.contains(item.path)
 
-        return HStack(spacing: 7) {
+        return HStack(spacing: 8) {
             Text(String(format: "%02d", index + 1))
-                .font(DS.mono(9.5))
+                .font(DS.mono(11))
                 .foregroundStyle(isSelected ? theme.accent : DS.text3)
-                .frame(width: 20, alignment: .leading)
+                .frame(width: 26, alignment: .leading)
 
             highlightedName(item.name, selected: isSelected, missing: isMissing)
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(isMissing ? NSLocalizedString("project_missing_title", comment: "") : parentPath(item.path))
-                .font(DS.mono(10))
+                .font(DS.mono(11.5))
                 .foregroundStyle(isMissing ? DS.warn : (isSelected ? theme.accent : DS.text3))
                 .lineLimit(1)
                 .truncationMode(.middle)
-                .frame(width: 150, alignment: .trailing)
+                .frame(width: 180, alignment: .trailing)
 
             Text(relativeShort(item.lastOpenedAt))
-                .font(DS.mono(10))
+                .font(DS.mono(11.5))
                 .foregroundStyle(isSelected ? theme.accent : DS.text3)
-                .frame(width: 42, alignment: .trailing)
+                .frame(width: 52, alignment: .trailing)
 
             Group {
                 if isHovered {
@@ -378,24 +378,24 @@ struct ContentView: View {
                         dataManager.removeProjects(item)
                     } label: {
                         Image(systemName: "trash")
-                            .font(.system(size: 12))
+                            .font(.system(size: 13))
                             .foregroundStyle(DS.text2)
                     }
                     .buttonStyle(.plain)
                 } else if isSelected, index < 9 {
                     Text("⌘\(index + 1)")
-                        .font(DS.mono(9))
+                        .font(DS.mono(10))
                         .foregroundStyle(theme.accent.opacity(0.85))
                 } else if isMissing {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 11))
+                        .font(.system(size: 12))
                         .foregroundStyle(DS.warn)
                 }
             }
-            .frame(width: 34, alignment: .trailing)
+            .frame(width: 42, alignment: .trailing)
         }
-        .padding(.horizontal, 8)
-        .frame(height: 32)
+        .padding(.horizontal, 10)
+        .frame(height: 38)
         .background(rowFill(selected: isSelected, hovered: isHovered))
         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
         .contentShape(Rectangle())
@@ -482,13 +482,13 @@ struct ContentView: View {
     private var emptyState: some View {
         VStack(spacing: 10) {
             Image(systemName: "tray")
-                .font(.system(size: 28, weight: .light))
+                .font(.system(size: 32, weight: .light))
                 .foregroundStyle(DS.text3)
             Text(LocalizedStringKey("empty_state_title"))
-                .font(.system(size: 15, weight: .medium))
+                .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(DS.text)
             Text(LocalizedStringKey("empty_state_hint"))
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(DS.text3)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -509,10 +509,10 @@ struct ContentView: View {
     private var noMatchState: some View {
         VStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 24, weight: .light))
+                .font(.system(size: 28, weight: .light))
                 .foregroundStyle(DS.text3)
             Text(LocalizedStringKey("no_match_hint"))
-                .font(.system(size: 12.5))
+                .font(.system(size: 14))
                 .foregroundStyle(DS.text3)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -527,11 +527,11 @@ struct ContentView: View {
             footItem("esc", key: "foot_close")
             Spacer(minLength: 0)
             Text(matchCountText)
-                .font(DS.mono(10))
+                .font(DS.mono(11))
                 .foregroundStyle(DS.text3)
         }
-        .padding(.horizontal, 14)
-        .frame(height: 32)
+        .padding(.horizontal, 16)
+        .frame(height: 38)
         .background(DS.surface)
         .overlay(alignment: .top) {
             Rectangle().fill(DS.line).frame(height: 1)
@@ -543,7 +543,7 @@ struct ContentView: View {
             Text(symbol).foregroundStyle(DS.text2)
             Text(LocalizedStringKey(key))
         }
-        .font(DS.mono(10))
+        .font(DS.mono(11))
         .foregroundStyle(DS.text3)
     }
 
@@ -601,9 +601,9 @@ struct ContentView: View {
             }
         } label: {
             Image(systemName: "plus")
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(DS.text2)
-                .frame(width: 26, height: 24)
+                .frame(width: 30, height: 28)
                 .background(DS.surface2)
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                 .overlay(
@@ -613,7 +613,7 @@ struct ContentView: View {
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
-        .frame(width: 26, height: 24)
+        .frame(width: 30, height: 28)
         .help(Text(LocalizedStringKey("add_projects")))
     }
 

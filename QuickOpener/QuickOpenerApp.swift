@@ -50,7 +50,7 @@ struct QuickOpenerApp: App {
 /// 应用程序代理，管理菜单栏图标、全局快捷键和窗口的生命周期。
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     /// 项目窗口的内容尺寸（与 ContentView 的固定 frame 保持一致）。
-    private static let contentSize = NSSize(width: 680, height: 440)
+    private static let contentSize = NSSize(width: 780, height: 514)
 
     /// 主窗口引用，存储当前打开的窗口。
     var window: NSWindow?
@@ -199,10 +199,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
         let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let margin: CGFloat = 8
-        let gap: CGFloat = 8
 
-        var x = mouse.x - 340 // 窗口水平居中于光标（680 / 2）
-        var y = mouse.y - size.height - gap
+        var x = mouse.x - 390 // 窗口水平居中于光标（780 / 2）
+
+        // 光标落在窗口顶部内侧 `cursorInset` 处（正好是输入行那一格）：
+        // 窗口向上兜住鼠标、主要向下展开，比「顶边贴在光标下方」贴得近得多
+        let cursorInset: CGFloat = 44
+        var y = mouse.y + cursorInset - size.height
 
         // 钳制到可见区域内（多显示器 / 靠近屏幕边缘时不会跑出屏幕）
         if visible.width > size.width + margin * 2 {
