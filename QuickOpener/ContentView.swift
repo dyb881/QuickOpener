@@ -19,6 +19,7 @@ struct ContentView: View {
     @ObservedObject private var inspector = ProjectInspector.shared
 
     @State private var hoveredPath: String?
+    @State private var settingsHovering = false
     @FocusState private var isFilterFocused: Bool
     /// 快捷键变化时自增，驱动 ⌥Z 徽标重绘。
     @State private var shortcutRevision = 0
@@ -83,11 +84,17 @@ struct ContentView: View {
         ZStack {
             WindowDragArea()
 
-            HStack(spacing: 0) {
+            HStack(spacing: 8) {
                 Text(LocalizedStringKey("app_name"))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(DS.text3)
+                    .allowsHitTesting(false)
+
                 Spacer(minLength: 0)
+                    .allowsHitTesting(false)
+
+                settingsButton
+
                 Text(currentShortcut)
                     .font(DS.mono(11))
                     .foregroundStyle(DS.text3)
@@ -99,11 +106,33 @@ struct ContentView: View {
                         RoundedRectangle(cornerRadius: 5, style: .continuous)
                             .strokeBorder(DS.line, lineWidth: 1)
                     )
+                    .allowsHitTesting(false)
             }
             .padding(.horizontal, 14)
-            .allowsHitTesting(false) // 让拖动区拿到鼠标事件
         }
         .frame(height: 30)
+    }
+
+    /// 标题条右侧的偏好设置入口。
+    ///
+    /// 标题条整体是 `WindowDragArea`，这里靠 SwiftUI 的命中测试分层：
+    /// 按钮在上层能收到点击，文字/Spacer 都设了 `allowsHitTesting(false)`，
+    /// 空白处的事件仍会落到下层拖动区。
+    private var settingsButton: some View {
+        Button {
+            (NSApp.delegate as? AppDelegate)?.showSetting()
+        } label: {
+            Image(systemName: "gearshape")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(settingsHovering ? theme.accent : DS.text3)
+                .frame(width: 22, height: 20)
+                .background(settingsHovering ? DS.surface2 : Color.clear)
+                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { settingsHovering = $0 }
+        .help(Text(LocalizedStringKey("menu_settings")))
     }
 
     // MARK: - 输入行
