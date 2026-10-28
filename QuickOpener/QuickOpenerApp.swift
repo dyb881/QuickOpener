@@ -111,15 +111,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
-    /// 显示/隐藏窗口（全局快捷键入口）。窗口已在前台时隐藏，否则显示。
+    /// 显示 / 移动 / 收起窗口（全局快捷键入口）。
+    ///
+    /// 三种情况分开处理，避免"窗口在屏幕另一头却找不到"：
+    /// - 窗口不在屏幕上 → 在光标中心弹出
+    /// - 窗口已显示，但光标在窗口外 → 把窗口挪到光标处（不隐藏）
+    /// - 窗口已显示，且光标就在窗口里 → 收起
     func toggleWindow() {
         print("AppDelegate: toggleWindow")
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            if let window = self.window, window.isVisible, NSApp.isActive {
+
+            guard let window = self.window, window.isVisible else {
+                self.showWindow()
+                return
+            }
+
+            let mouse = NSEvent.mouseLocation
+            if NSApp.isActive, window.frame.contains(mouse) {
                 self.hideWindow(window)
             } else {
-                self.showWindow()
+                // 挪到当前光标处：窗口常驻后文件可能已被移走，顺带刷新失效状态
+                QuickOpenerApp.dataManager.refreshMissingPaths()
+                self.positionWindowAtCursor(window)
+                self.activateWindow(window)
             }
         }
     }
