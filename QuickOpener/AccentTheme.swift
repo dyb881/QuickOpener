@@ -90,7 +90,6 @@ final class ThemeManager: ObservableObject {
     @Published var windowOpacity: Double {
         didSet {
             UserDefaults.standard.set(windowOpacity, forKey: Self.opacityKey)
-            refreshWindowMaterials()
         }
     }
 
@@ -113,26 +112,13 @@ final class ThemeManager: ObservableObject {
     /// 三种材质都保持窗口透明：背景一律由 SwiftUI 的 `WindowBackdropView` 铺，
     /// `solid` 用不透明渐变填满即可。若让窗口 `isOpaque = true`，
     /// `clipShape` 圆角之外会露出窗口底色，角落变成方块。
+    /// 只有主窗口是透明的（材质需要），设置窗口保持不透明，
+    /// 否则它的系统标题栏会变成透视、和内容区割裂。
     func applyBackdrop() {
-        for window in NSApp.windows {
+        for window in NSApp.windows
+        where window.identifier?.rawValue == "mainWindow" {
             window.isOpaque = false
             window.backgroundColor = .clear
-        }
-        refreshWindowMaterials()
-    }
-
-    /// 同步偏好设置窗口里那块 AppKit 材质层。
-    ///
-    /// 主窗口的材质由 SwiftUI 的 `VisualEffectBackground` 自己更新，
-    /// 设置窗口的材质是手动挂的（为了覆盖标题栏），需要在这里刷。
-    func refreshWindowMaterials() {
-        for window in NSApp.windows {
-            for subview in window.contentView?.subviews ?? [] {
-                guard let effect = subview as? NSVisualEffectView,
-                      effect.identifier?.rawValue == "settingsBackdrop" else { continue }
-                effect.material = backdrop.material ?? .underWindowBackground
-                effect.alphaValue = windowOpacity
-            }
         }
     }
 

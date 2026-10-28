@@ -97,9 +97,9 @@ struct SettingsView: View {
         }
         .frame(width: 760)
         .frame(minHeight: 300, maxHeight: .infinity) // 高度跟随窗口（含标题栏区域），背景才能铺满
-        // 材质由 AppDelegate 在 contentView 底层铺（才能覆盖标题栏），
-        // 这里只叠渐变，否则会变成两层材质、遮挡过重
-        .background(DS.windowGradient.opacity(theme.backdrop.overlay(userOpacity: theme.windowOpacity)))
+        // 设置窗口不透明（系统标题栏需要稳定背景），所以这里铺不透明渐变。
+        // 材质与透明度只作用于主窗口。
+        .background(DS.windowGradient)
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }
@@ -173,7 +173,7 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 8)
-        .padding(.top, 34) // 给标题栏红绿灯让位
+        .padding(.top, 10)
         .frame(width: 172)
         .frame(maxHeight: .infinity)
         .background(DS.surface)
@@ -223,9 +223,7 @@ struct SettingsView: View {
                 case .about:      aboutPane
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 26)
-            .padding(.bottom, 20)
+            .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

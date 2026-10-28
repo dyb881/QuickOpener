@@ -165,6 +165,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         )
 
         // 深色玻璃外观：透明窗口 + 隐藏标题栏，圆角与高光边由 SwiftUI 自绘
+        newWindow.identifier = NSUserInterfaceItemIdentifier("mainWindow")
         newWindow.isOpaque = false
         newWindow.backgroundColor = .clear
         newWindow.titlebarAppearsTransparent = true

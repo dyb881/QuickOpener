@@ -85,17 +85,16 @@ extension AppDelegate {
             // 窗口保持不透明，标题栏由 AppKit 绘制；外观跟随设置
             newWindow.appearance = ThemeManager.shared.appearance.nsAppearance
 
-            // 内容区要能看到毛玻璃，窗口本身必须非不透明
-            newWindow.isOpaque = false
-            newWindow.backgroundColor = .clear
+            // 设置窗口保持不透明：标题栏由 AppKit 绘制，只有窗口不透明时
+            // 它才有稳定的背景色。背景色取与内容渐变同色系的值，避免标题栏
+            // 和内容区出现一条明显色差。
+            newWindow.isOpaque = true
+            newWindow.backgroundColor = NSColor(name: nil) { appearance in
+                appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+                    ? NSColor(red: 0.10, green: 0.12, blue: 0.16, alpha: 1)
+                    : NSColor(red: 0.96, green: 0.97, blue: 0.98, alpha: 1)
+            }
 
-            // 标题栏也融进同一块材质：否则 AppKit 画的标题栏是系统色，
-            // 和下方毛玻璃内容割裂，甚至在非不透明窗口上透出桌面。
-            // 内容延伸到标题栏下方，红绿灯浮在材质上（与系统设置一致），
-            // 所以侧边栏顶部留 34pt 避开它们。
-            newWindow.titlebarAppearsTransparent = true
-            newWindow.titleVisibility = .hidden
-            newWindow.styleMask.insert(.fullSizeContentView)
             let hostingController = NSHostingController(rootView:
                 SettingsView()
                     .modelContainer(QuickOpenerApp.sharedModelContainer)
@@ -108,20 +107,6 @@ extension AppDelegate {
             // 窗口尺寸固定，内容超长时由 SettingsView 内部的 ScrollView 处理。
             newWindow.contentViewController = hostingController
 
-            // 材质必须垫在 hosting view 的最底层：
-            // titlebarAppearsTransparent 之后，SwiftUI 的 .background 仍然铺不到
-            // 标题栏那一条，会在窗口顶部留出一条透明的空白。
-            // 挂成 contentView 的子视图并设 autoresizingMask，就能覆盖整个窗口。
-            let backdropView = NSVisualEffectView()
-            backdropView.material = ThemeManager.shared.backdrop.material ?? .underWindowBackground
-            backdropView.blendingMode = .behindWindow
-            backdropView.state = .active
-            backdropView.isEmphasized = false
-            backdropView.alphaValue = ThemeManager.shared.windowOpacity
-            backdropView.identifier = NSUserInterfaceItemIdentifier("settingsBackdrop")
-            backdropView.autoresizingMask = [.width, .height]
-            backdropView.frame = hostingController.view.bounds
-            hostingController.view.addSubview(backdropView, positioned: .below, relativeTo: nil)
             newWindow.delegate = self
             newWindow.isReleasedWhenClosed = false
             newWindow.isMovableByWindowBackground = true // 允许通过背景拖动窗口
