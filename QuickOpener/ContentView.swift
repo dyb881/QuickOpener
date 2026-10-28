@@ -81,35 +81,30 @@ struct ContentView: View {
     /// 细标题条：整条作为窗口拖动区（SwiftUI 铺满内容后
     /// `isMovableByWindowBackground` 会失效，必须显式接管）。
     private var titleBar: some View {
-        HStack(spacing: 8) {
-            // 拖动区只覆盖左侧这一段：WindowDragArea 是真实 NSView，
-            // 它的 mouseDown 会直接 performDrag，压在下面的 SwiftUI 按钮永远收不到点击。
-            // 所以齿轮和快捷键徽标必须放在这个 NSView 的矩形之外。
-            ZStack(alignment: .leading) {
-                WindowDragArea()
+        ZStack {
+            WindowDragArea()
 
+            HStack(spacing: 0) {
                 Text(LocalizedStringKey("app_name"))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(DS.text3)
-                    .padding(.leading, 14)
-                    .allowsHitTesting(false)
+
+                Spacer(minLength: 0)
+
+                Text(currentShortcut)
+                    .font(DS.mono(11))
+                    .foregroundStyle(DS.text3)
+                    .padding(.horizontal, 6)
+                    .frame(height: 20)
+                    .background(DS.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .strokeBorder(DS.line, lineWidth: 1)
+                    )
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            settingsButton
-
-            Text(currentShortcut)
-                .font(DS.mono(11))
-                .foregroundStyle(DS.text3)
-                .padding(.horizontal, 6)
-                .frame(height: 20)
-                .background(DS.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5, style: .continuous)
-                        .strokeBorder(DS.line, lineWidth: 1)
-                )
-                .padding(.trailing, 14)
+            .padding(.horizontal, 14)
+            .allowsHitTesting(false) // 整条交给下方拖动区
         }
         .frame(height: 30)
     }
@@ -128,11 +123,11 @@ struct ContentView: View {
             }
         } label: {
             Image(systemName: "gearshape")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(settingsHovering ? theme.accent : DS.text3)
-                .frame(width: 22, height: 20)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(settingsHovering ? theme.accent : DS.text2)
+                .frame(width: 30, height: 28)
                 .background(settingsHovering ? DS.surface2 : Color.clear)
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -165,13 +160,17 @@ struct ContentView: View {
                 .font(DS.mono(11.5))
                 .foregroundStyle(DS.text3)
 
+            settingsButton
+
             addProjectButton
         }
         .padding(.horizontal, 16)
         .frame(height: 56)
-        // 点放大镜、计数或余白也聚焦搜索框（按钮自己消费点击，不受影响）
+        // 点放大镜、计数或余白也聚焦搜索框。
+        // 用 simultaneousGesture 而不是 onTapGesture：并行识别不抢事件，
+        // 齿轮和「+」的点击照常触发，只是顺带也让搜索框拿到焦点。
         .contentShape(Rectangle())
-        .onTapGesture { isFilterFocused = true }
+        .simultaneousGesture(TapGesture().onEnded { isFilterFocused = true })
         .overlay(alignment: .bottom) {
             Rectangle().fill(DS.line).frame(height: 1)
         }

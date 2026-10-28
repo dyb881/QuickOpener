@@ -180,7 +180,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         newWindow.collectionBehavior = [.managed, .moveToActiveSpace]
         newWindow.delegate = self
         newWindow.isReleasedWhenClosed = false // 窗口关闭时保留引用
-        newWindow.isMovableByWindowBackground = true // 允许通过背景拖动窗口
+        // 拖动由 ContentView 顶部的 WindowDragArea 负责；这里开着会让
+        // 未被控件消费的点击变成拖窗口，正是按钮点不动的另一个来源
+        newWindow.isMovableByWindowBackground = false
         // 隐藏左上角红绿灯：纯菜单栏交互，关闭用 Esc，移动靠拖动背景
         newWindow.standardWindowButton(.closeButton)?.isHidden = true
         newWindow.standardWindowButton(.miniaturizeButton)?.isHidden = true
