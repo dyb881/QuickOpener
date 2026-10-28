@@ -9,7 +9,6 @@
 "settings_about" = "Info";
 "app_name" = "QuickOpener";
 "app_description_short" = "Schnellstart und Verwaltung Ihrer Projekte";
-"app_description_long" = "Verwenden Sie die globale Tastenkombination (Standard Option+Z), um jederzeit das Projektauswahlfenster zu öffnen und Ihre Arbeitseffizienz zu steigern.";
 
 "menu_show_window" = "Fenster anzeigen";
 "menu_reset_cache" = "Cache zurücksetzen";

@@ -9,7 +9,6 @@
 "settings_about" = "About";
 "app_name" = "QuickOpener";
 "app_description_short" = "Quickly launch and manage your projects";
-"app_description_long" = "Use global shortcut (default Option+Z) to open project selection window anytime, improving work efficiency.";
 
 "menu_show_window" = "Show Window";
 "menu_reset_cache" = "Reset Cache";

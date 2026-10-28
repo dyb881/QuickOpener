@@ -180,27 +180,6 @@ struct WindowDragArea: NSViewRepresentable {
     }
 }
 
-/// 键帽：统一快捷键徽标的字形、圆角与描边。
-struct KeyCap: View {
-    let text: String
-    var tint: Color?
-    var fontSize: CGFloat = 10
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: fontSize, weight: .medium, design: .monospaced))
-            .foregroundStyle(tint ?? DS.text)
-            .padding(.horizontal, 5)
-            .frame(minWidth: 20, minHeight: 20)
-            .background(tint.map { $0.opacity(0.08) } ?? DS.surface2)
-            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .strokeBorder(tint.map { $0.opacity(0.28) } ?? DS.line2, lineWidth: 1)
-            )
-    }
-}
-
 /// 窗口背景：按用户选择的材质铺底。
 ///
 /// 两个窗口（主窗口 / 偏好设置）共用，保证切换材质后观感一致。

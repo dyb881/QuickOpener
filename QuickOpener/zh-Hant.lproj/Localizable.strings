@@ -9,7 +9,6 @@
 "settings_about" = "關於";
 "app_name" = "QuickOpener";
 "app_description_short" = "快速啟動和管理您的專案";
-"app_description_long" = "使用全域快捷鍵（預設 Option+Z）隨時開啟專案選擇視窗，提升工作效率。";
 
 "menu_show_window" = "顯示視窗";
 "menu_reset_cache" = "重置快取";
