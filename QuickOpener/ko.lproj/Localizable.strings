@@ -106,3 +106,4 @@
 "backdrop_solid" = "단색";
 "backdrop_frosted" = "무광";
 "backdrop_glass" = "유리";
+"label_opacity" = "불투명도";

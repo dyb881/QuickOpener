@@ -104,3 +104,4 @@
 "backdrop_solid" = "Uni";
 "backdrop_frosted" = "Dépoli";
 "backdrop_glass" = "Verre";
+"label_opacity" = "Opacité";

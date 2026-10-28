@@ -199,6 +199,7 @@ struct KeyCap: View {
 /// 两个窗口（主窗口 / 偏好设置）共用，保证切换材质后观感一致。
 struct WindowBackdropView: View {
     let backdrop: WindowBackdrop
+    var opacity: Double = 1.0
 
     var body: some View {
         ZStack {
@@ -206,7 +207,7 @@ struct WindowBackdropView: View {
                 VisualEffectBackground(material: material)
             }
 
-            DS.windowGradient.opacity(backdrop.overlayOpacity)
+            DS.windowGradient.opacity(backdrop.overlay(userOpacity: opacity))
 
             if backdrop == .glass {
                 // 玻璃模式加一层左上角高光，拉开与磨砂的观感差异

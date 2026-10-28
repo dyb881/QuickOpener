@@ -164,6 +164,25 @@ struct SettingsView: View {
                                 .labelsHidden()
                                 .frame(width: 216)
                             }
+
+                            Rectangle()
+                                .fill(DS.line)
+                                .frame(height: 1)
+
+                            HStack(spacing: 10) {
+                                Text(LocalizedStringKey("label_opacity"))
+                                    .font(.system(size: 12.5))
+                                    .foregroundStyle(DS.text)
+                                Spacer(minLength: 8)
+                                Slider(value: $theme.windowOpacity, in: 0.35...1.0)
+                                    .controlSize(.small)
+                                    .tint(theme.accent)
+                                    .frame(width: 150)
+                                Text(verbatim: "\(Int((theme.windowOpacity * 100).rounded()))%")
+                                    .font(DS.mono(11))
+                                    .foregroundStyle(DS.text3)
+                                    .frame(width: 40, alignment: .trailing)
+                            }
                         }
                     }
                 }
@@ -277,8 +296,8 @@ struct SettingsView: View {
             }
             .padding(22)
         }
-        .frame(width: 560, height: 740)
-        .background(WindowBackdropView(backdrop: theme.backdrop))
+        .frame(width: 560, height: 800)
+        .background(WindowBackdropView(backdrop: theme.backdrop, opacity: theme.windowOpacity))
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }

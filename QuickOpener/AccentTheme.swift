@@ -65,6 +65,7 @@ final class ThemeManager: ObservableObject {
     private static let accentKey = "accentTheme"
     private static let appearanceKey = "appearanceMode"
     private static let backdropKey = "windowBackdrop"
+    private static let opacityKey = "windowOpacity"
 
     @Published var theme: AccentTheme {
         didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.accentKey) }
@@ -84,6 +85,12 @@ final class ThemeManager: ObservableObject {
         }
     }
 
+    /// 窗口背景不透明度（0.35 最透 ~ 1.0 最实）。
+    /// 只影响背景层，文字与控件不受影响。
+    @Published var windowOpacity: Double {
+        didSet { UserDefaults.standard.set(windowOpacity, forKey: Self.opacityKey) }
+    }
+
     init() {
         let savedAccent = UserDefaults.standard.string(forKey: Self.accentKey)
         theme = savedAccent.flatMap(AccentTheme.init(rawValue:)) ?? .system
@@ -91,6 +98,8 @@ final class ThemeManager: ObservableObject {
         appearance = savedAppearance.flatMap(AppearanceMode.init(rawValue:)) ?? .system
         let savedBackdrop = UserDefaults.standard.string(forKey: Self.backdropKey)
         backdrop = savedBackdrop.flatMap(WindowBackdrop.init(rawValue:)) ?? .frosted
+        let savedOpacity = UserDefaults.standard.object(forKey: Self.opacityKey) as? Double
+        windowOpacity = savedOpacity ?? 1.0
     }
 
     /// 当前生效的强调色（`system` 时回退到系统强调色）。
@@ -140,12 +149,19 @@ enum WindowBackdrop: String, CaseIterable, Identifiable {
         }
     }
 
-    /// 盖在材质上的暗色渐变强度：玻璃要更透，磨砂要压住背景保证可读性。
-    var overlayOpacity: Double {
+    /// 盖在材质上的暗色渐变**基准**强度（还要再乘用户设定的窗口不透明度）。
+    /// 玻璃要更透，磨砂要压住背景保证可读性。
+    var baseOverlay: Double {
         switch self {
         case .solid:   return 1.0
         case .frosted: return 0.55
         case .glass:   return 0.30
         }
+    }
+
+    /// 叠上用户透明度后的最终遮挡强度。
+    /// `solid` 也会跟着变透（成为半透明纯色），这样滑块在三种模式下都有意义。
+    func overlay(userOpacity: Double) -> Double {
+        baseOverlay * userOpacity
     }
 }

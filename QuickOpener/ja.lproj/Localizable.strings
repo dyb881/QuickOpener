@@ -104,3 +104,4 @@
 "backdrop_solid" = "単色";
 "backdrop_frosted" = "すりガラス";
 "backdrop_glass" = "ガラス";
+"label_opacity" = "不透明度";

@@ -104,3 +104,4 @@
 "backdrop_solid" = "Solid";
 "backdrop_frosted" = "Frosted";
 "backdrop_glass" = "Glass";
+"label_opacity" = "Opacity";

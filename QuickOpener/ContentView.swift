@@ -32,7 +32,7 @@ struct ContentView: View {
             footBar
         }
         .frame(width: 780, height: 514)
-        .background(WindowBackdropView(backdrop: theme.backdrop))
+        .background(WindowBackdropView(backdrop: theme.backdrop, opacity: theme.windowOpacity))
         .clipShape(RoundedRectangle(cornerRadius: DS.radius, style: .continuous))
         .overlay(GlassBorder())
         .tint(theme.accent)

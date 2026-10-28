@@ -73,7 +73,7 @@ extension AppDelegate {
                 x: screenFrame.midX - 280,
                 y: screenFrame.midY - 350,
                 width: 560,
-                height: 740
+                height: 800
             )
             let newWindow = NSWindow(
                 contentRect: windowRect,

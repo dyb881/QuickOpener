@@ -104,3 +104,4 @@
 "backdrop_solid" = "純色";
 "backdrop_frosted" = "霧面";
 "backdrop_glass" = "玻璃";
+"label_opacity" = "透明度";

@@ -104,3 +104,4 @@
 "backdrop_solid" = "Einfarbig";
 "backdrop_frosted" = "Matt";
 "backdrop_glass" = "Glas";
+"label_opacity" = "Deckkraft";
