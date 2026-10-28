@@ -32,12 +32,7 @@ struct ContentView: View {
             footBar
         }
         .frame(width: 780, height: 514)
-        .background(
-            ZStack {
-                VisualEffectBackground()
-                DS.windowGradient.opacity(0.97)
-            }
-        )
+        .background(WindowBackdropView(backdrop: theme.backdrop))
         .clipShape(RoundedRectangle(cornerRadius: DS.radius, style: .continuous))
         .overlay(GlassBorder())
         .tint(theme.accent)

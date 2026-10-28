@@ -193,3 +193,30 @@ struct KeyCap: View {
             )
     }
 }
+
+/// 窗口背景：按用户选择的材质铺底。
+///
+/// 两个窗口（主窗口 / 偏好设置）共用，保证切换材质后观感一致。
+struct WindowBackdropView: View {
+    let backdrop: WindowBackdrop
+
+    var body: some View {
+        ZStack {
+            if let material = backdrop.material {
+                VisualEffectBackground(material: material)
+            }
+
+            DS.windowGradient.opacity(backdrop.overlayOpacity)
+
+            if backdrop == .glass {
+                // 玻璃模式加一层左上角高光，拉开与磨砂的观感差异
+                LinearGradient(
+                    colors: [Color.white.opacity(0.10), Color.clear],
+                    startPoint: .topLeading,
+                    endPoint: .center
+                )
+                .allowsHitTesting(false)
+            }
+        }
+    }
+}

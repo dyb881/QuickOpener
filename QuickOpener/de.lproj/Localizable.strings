@@ -98,3 +98,9 @@
 "context_copy_name" = "Namen kopieren";
 "context_copy_file" = "Datei kopieren";
 "context_recalculate" = "Größe neu berechnen";
+
+/* 背景材质 */
+"label_backdrop" = "Hintergrund";
+"backdrop_solid" = "Einfarbig";
+"backdrop_frosted" = "Matt";
+"backdrop_glass" = "Glas";

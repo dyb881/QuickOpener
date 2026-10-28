@@ -64,6 +64,7 @@ final class ThemeManager: ObservableObject {
 
     private static let accentKey = "accentTheme"
     private static let appearanceKey = "appearanceMode"
+    private static let backdropKey = "windowBackdrop"
 
     @Published var theme: AccentTheme {
         didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.accentKey) }
@@ -76,15 +77,36 @@ final class ThemeManager: ObservableObject {
         }
     }
 
+    @Published var backdrop: WindowBackdrop {
+        didSet {
+            UserDefaults.standard.set(backdrop.rawValue, forKey: Self.backdropKey)
+            applyBackdrop()
+        }
+    }
+
     init() {
         let savedAccent = UserDefaults.standard.string(forKey: Self.accentKey)
         theme = savedAccent.flatMap(AccentTheme.init(rawValue:)) ?? .system
         let savedAppearance = UserDefaults.standard.string(forKey: Self.appearanceKey)
         appearance = savedAppearance.flatMap(AppearanceMode.init(rawValue:)) ?? .system
+        let savedBackdrop = UserDefaults.standard.string(forKey: Self.backdropKey)
+        backdrop = savedBackdrop.flatMap(WindowBackdrop.init(rawValue:)) ?? .frosted
     }
 
     /// 当前生效的强调色（`system` 时回退到系统强调色）。
     var accent: Color { theme.presetColor ?? .accentColor }
+
+    /// 材质切换后同步所有窗口的透明设置。
+    ///
+    /// 三种材质都保持窗口透明：背景一律由 SwiftUI 的 `WindowBackdropView` 铺，
+    /// `solid` 用不透明渐变填满即可。若让窗口 `isOpaque = true`，
+    /// `clipShape` 圆角之外会露出窗口底色，角落变成方块。
+    func applyBackdrop() {
+        for window in NSApp.windows {
+            window.isOpaque = false
+            window.backgroundColor = .clear
+        }
+    }
 
     /// 把外观应用到整个 App 与所有已存在的窗口，切换后无需重启。
     func applyAppearance() {
@@ -92,6 +114,38 @@ final class ThemeManager: ObservableObject {
         NSApp.appearance = nsAppearance
         for window in NSApp.windows {
             window.appearance = nsAppearance
+        }
+    }
+}
+
+/// 窗口背景材质。
+///
+/// - `solid`：不透明深色渐变，性能最好、文字对比最稳
+/// - `frosted`：系统 `.underWindowBackground` 毛玻璃，模糊强、有降噪，传统 macOS 观感
+/// - `glass`：`.fullScreenUI` 轻薄材质 + 低透明度叠加 + 左上高光，接近 Liquid Glass
+enum WindowBackdrop: String, CaseIterable, Identifiable {
+    case solid
+    case frosted
+    case glass
+
+    var id: String { rawValue }
+    var localizedKey: String { "backdrop_\(rawValue)" }
+
+    /// `solid` 不铺毛玻璃，返回 nil。
+    var material: NSVisualEffectView.Material? {
+        switch self {
+        case .solid:   return nil
+        case .frosted: return .underWindowBackground
+        case .glass:   return .fullScreenUI
+        }
+    }
+
+    /// 盖在材质上的暗色渐变强度：玻璃要更透，磨砂要压住背景保证可读性。
+    var overlayOpacity: Double {
+        switch self {
+        case .solid:   return 1.0
+        case .frosted: return 0.55
+        case .glass:   return 0.30
         }
     }
 }

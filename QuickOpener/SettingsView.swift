@@ -145,6 +145,25 @@ struct SettingsView: View {
                                     }
                                 }
                             }
+
+                            Rectangle()
+                                .fill(DS.line)
+                                .frame(height: 1)
+
+                            HStack {
+                                Text(LocalizedStringKey("label_backdrop"))
+                                    .font(.system(size: 12.5))
+                                    .foregroundStyle(DS.text)
+                                Spacer(minLength: 12)
+                                Picker("", selection: $theme.backdrop) {
+                                    ForEach(WindowBackdrop.allCases) { item in
+                                        Text(LocalizedStringKey(item.localizedKey)).tag(item)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .labelsHidden()
+                                .frame(width: 216)
+                            }
                         }
                     }
                 }
@@ -258,8 +277,8 @@ struct SettingsView: View {
             }
             .padding(22)
         }
-        .frame(width: 560, height: 700)
-        .background(DS.windowGradient)
+        .frame(width: 560, height: 740)
+        .background(WindowBackdropView(backdrop: theme.backdrop))
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }

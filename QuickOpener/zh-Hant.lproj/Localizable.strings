@@ -98,3 +98,9 @@
 "context_copy_name" = "複製名稱";
 "context_copy_file" = "複製檔案";
 "context_recalculate" = "重新計算大小";
+
+/* 背景材质 */
+"label_backdrop" = "背景材質";
+"backdrop_solid" = "純色";
+"backdrop_frosted" = "霧面";
+"backdrop_glass" = "玻璃";

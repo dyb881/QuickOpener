@@ -73,7 +73,7 @@ extension AppDelegate {
                 x: screenFrame.midX - 280,
                 y: screenFrame.midY - 350,
                 width: 560,
-                height: 700
+                height: 740
             )
             let newWindow = NSWindow(
                 contentRect: windowRect,
@@ -84,6 +84,11 @@ extension AppDelegate {
 
             // 窗口保持不透明，标题栏由 AppKit 绘制；外观跟随设置
             newWindow.appearance = ThemeManager.shared.appearance.nsAppearance
+
+            // 内容区要能看到毛玻璃，窗口本身必须非不透明；
+            // 标题栏仍由 AppKit 绘制（没有开 titlebarAppearsTransparent），所以不会变透明
+            newWindow.isOpaque = false
+            newWindow.backgroundColor = .clear
             let hostingController = NSHostingController(rootView:
                 SettingsView()
                     .modelContainer(QuickOpenerApp.sharedModelContainer)

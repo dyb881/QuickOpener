@@ -98,3 +98,9 @@
 "context_copy_name" = "复制名称";
 "context_copy_file" = "复制文件";
 "context_recalculate" = "重新计算体量";
+
+/* 背景材质 */
+"label_backdrop" = "背景材质";
+"backdrop_solid" = "纯色";
+"backdrop_frosted" = "磨砂";
+"backdrop_glass" = "玻璃";
