@@ -55,10 +55,21 @@ struct SettingsView: View {
     private func themeSwatch(_ item: AccentTheme) -> some View {
         let isSelected = theme.theme == item
         Button {
-            theme.theme = item
+            if item == .custom {
+                // 自定义：先切到 custom，再用当前色打开系统取色器；
+                // 选色过程中 customAccent 变化，accent 立即跟着变
+                theme.theme = .custom
+                NSColorPanel.shared.showsAlpha = false
+                NSColorPanel.shared.color = NSColor(theme.customAccent)
+                NSColorPanel.shared.orderFront(nil)
+            } else {
+                theme.theme = item
+            }
         } label: {
             ZStack {
-                if let preset = item.presetColor {
+                if item == .custom {
+                    Circle().fill(theme.customAccent)
+                } else if let preset = item.presetColor {
                     Circle().fill(preset)
                 } else {
                     // 跟随系统：多色环表示「自动」
@@ -293,7 +304,9 @@ struct SettingsView: View {
                                 themeSwatch(item)
                             }
                         }
-                        .frame(width: 216, alignment: .trailing) // 6 × (25+6) + 5 × 6 = 216
+                        // 7 个色块合计 253pt，超过其它行的 216 槽位；
+                        // 保留右对齐即可，右边界仍与分段控件同一条线
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                     }
 
                     Rectangle().fill(DS.line).frame(height: 1)
@@ -331,6 +344,12 @@ struct SettingsView: View {
                     }
                 }
             }
+        }
+        // 取色器是全局面板，只在当前主题确实是自定义色时才同步，
+        // 避免在别的场景打开面板时误改主题
+        .onReceive(NotificationCenter.default.publisher(for: NSColorPanel.colorDidChangeNotification)) { _ in
+            guard theme.theme == .custom else { return }
+            theme.customAccent = Color(NSColorPanel.shared.color)
         }
     }
 

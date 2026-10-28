@@ -108,3 +108,4 @@
 "button_restart" = "Restart";
 "label_data_backup" = "Backup & Restore";
 "label_data_cache" = "Cache";
+"theme_custom" = "Custom";

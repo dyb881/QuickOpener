@@ -10,6 +10,20 @@ import AppKit
 import Combine
 import SwiftUI
 
+extension Color {
+    /// 从 "RRGGBB" / "#RRGGBB" 还原颜色，用于自定义强调色的持久化。
+    init?(hexString: String) {
+        var text = hexString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.hasPrefix("#") { text.removeFirst() }
+        guard text.count == 6, let value = UInt32(text, radix: 16) else { return nil }
+        self.init(
+            red:   Double((value >> 16) & 0xFF) / 255,
+            green: Double((value >> 8) & 0xFF) / 255,
+            blue:  Double(value & 0xFF) / 255
+        )
+    }
+}
+
 /// 可选的主题强调色。`system` 表示跟随 macOS 系统强调色设置。
 enum AccentTheme: String, CaseIterable, Identifiable {
     case system
@@ -18,16 +32,19 @@ enum AccentTheme: String, CaseIterable, Identifiable {
     case purple
     case orange
     case pink
+    /// 用户自定义色，取 `ThemeManager.customAccent`。
+    case custom
 
     var id: String { rawValue }
 
     /// 设置界面展示用的本地化 key。
     var localizedKey: String { "theme_\(rawValue)" }
 
-    /// 预设颜色；`system` 返回 nil，调用方回退到系统强调色。
+    /// 预设颜色；`system` 与 `custom` 返回 nil，由 ThemeManager 决定实际颜色。
     var presetColor: Color? {
         switch self {
         case .system: return nil
+        case .custom: return nil
         case .mint:   return Color(red: 0.431, green: 0.906, blue: 0.816)
         case .blue:   return Color(red: 0.302, green: 0.639, blue: 1.000)
         case .purple: return Color(red: 0.690, green: 0.486, blue: 1.000)
@@ -66,10 +83,23 @@ final class ThemeManager: ObservableObject {
     private static let appearanceKey = "appearanceMode"
     private static let backdropKey = "windowBackdrop"
     private static let opacityKey = "windowOpacity"
+    private static let customAccentKey = "customAccentHex"
 
     @Published var theme: AccentTheme {
         didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.accentKey) }
     }
+
+    /// 自定义强调色。改动即存 hex，并自动把主题切到 `.custom`，
+    /// 这样在取色器里选完颜色就立刻生效，不需要再点一次色块。
+    @Published var customAccent: Color {
+        didSet {
+            Self.saveCustomAccent(customAccent)
+            if theme != .custom { theme = .custom }
+        }
+    }
+
+    /// 未设置过自定义色时的默认值（中性灰蓝，不抢眼）。
+    static let defaultCustomAccent = Color(red: 0.541, green: 0.576, blue: 0.651)
 
     @Published var appearance: AppearanceMode {
         didSet {
@@ -94,6 +124,8 @@ final class ThemeManager: ObservableObject {
     }
 
     init() {
+        // customAccent 必须先于 theme 赋值：它的 didSet 会读 theme
+        customAccent = Self.loadCustomAccent()
         let savedAccent = UserDefaults.standard.string(forKey: Self.accentKey)
         theme = savedAccent.flatMap(AccentTheme.init(rawValue:)) ?? .system
         let savedAppearance = UserDefaults.standard.string(forKey: Self.appearanceKey)
@@ -105,7 +137,34 @@ final class ThemeManager: ObservableObject {
     }
 
     /// 当前生效的强调色（`system` 时回退到系统强调色）。
-    var accent: Color { theme.presetColor ?? .accentColor }
+    // MARK: - 自定义色持久化
+
+    static func loadCustomAccent() -> Color {
+        guard let hex = UserDefaults.standard.string(forKey: customAccentKey),
+              let color = Color(hexString: hex) else {
+            return defaultCustomAccent
+        }
+        return color
+    }
+
+    static func saveCustomAccent(_ color: Color) {
+        let ns = NSColor(color).usingColorSpace(.sRGB) ?? .systemGray
+        let hex = String(
+            format: "%02X%02X%02X",
+            Int((ns.redComponent * 255).rounded()),
+            Int((ns.greenComponent * 255).rounded()),
+            Int((ns.blueComponent * 255).rounded())
+        )
+        UserDefaults.standard.set(hex, forKey: customAccentKey)
+    }
+
+    var accent: Color {
+        switch theme {
+        case .custom: return customAccent
+        case .system: return .accentColor
+        default:      return theme.presetColor ?? .accentColor
+        }
+    }
 
     /// 材质切换后同步所有窗口的透明设置。
     ///

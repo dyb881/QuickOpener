@@ -108,3 +108,4 @@
 "button_restart" = "重启";
 "label_data_backup" = "备份与恢复";
 "label_data_cache" = "缓存";
+"theme_custom" = "自定义";

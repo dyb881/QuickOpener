@@ -108,3 +108,4 @@
 "button_restart" = "再起動";
 "label_data_backup" = "バックアップと復元";
 "label_data_cache" = "キャッシュ";
+"theme_custom" = "カスタム";
