@@ -85,10 +85,17 @@ extension AppDelegate {
             // 窗口保持不透明，标题栏由 AppKit 绘制；外观跟随设置
             newWindow.appearance = ThemeManager.shared.appearance.nsAppearance
 
-            // 内容区要能看到毛玻璃，窗口本身必须非不透明；
-            // 标题栏仍由 AppKit 绘制（没有开 titlebarAppearsTransparent），所以不会变透明
+            // 内容区要能看到毛玻璃，窗口本身必须非不透明
             newWindow.isOpaque = false
             newWindow.backgroundColor = .clear
+
+            // 标题栏也融进同一块材质：否则 AppKit 画的标题栏是系统色，
+            // 和下方毛玻璃内容割裂，甚至在非不透明窗口上透出桌面。
+            // 内容延伸到标题栏下方，红绿灯浮在材质上（与系统设置一致），
+            // 所以侧边栏顶部留 34pt 避开它们。
+            newWindow.titlebarAppearsTransparent = true
+            newWindow.titleVisibility = .hidden
+            newWindow.styleMask.insert(.fullSizeContentView)
             let hostingController = NSHostingController(rootView:
                 SettingsView()
                     .modelContainer(QuickOpenerApp.sharedModelContainer)

@@ -170,7 +170,7 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 8)
-        .padding(.top, 10)
+        .padding(.top, 34) // 给标题栏红绿灯让位
         .frame(width: 172)
         .frame(maxHeight: .infinity)
         .background(DS.surface)
@@ -220,7 +220,9 @@ struct SettingsView: View {
                 case .about:      aboutPane
                 }
             }
-            .padding(20)
+            .padding(.horizontal, 20)
+            .padding(.top, 26)
+            .padding(.bottom, 20)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -340,13 +342,18 @@ struct SettingsView: View {
                             UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
                         }
                     }
-                    HStack {
-                        Spacer(minLength: 0)
-                        Button(LocalizedStringKey("restart_takes_effect")) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 10))
+                        Text(LocalizedStringKey("restart_takes_effect"))
+                            .font(.system(size: 10.5))
+                        Spacer(minLength: 8)
+                        Button(LocalizedStringKey("button_restart")) {
                             restartApp()
                         }
                         .controlSize(.small)
                     }
+                    .foregroundStyle(DS.text3)
                 }
             }
         }
