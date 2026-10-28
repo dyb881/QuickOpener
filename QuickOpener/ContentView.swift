@@ -19,7 +19,6 @@ struct ContentView: View {
     @ObservedObject private var inspector = ProjectInspector.shared
 
     @State private var hoveredPath: String?
-    @State private var settingsHovering = false
     @FocusState private var isFilterFocused: Bool
     /// 快捷键变化时自增，驱动 ⌥Z 徽标重绘。
     @State private var shortcutRevision = 0
@@ -109,32 +108,6 @@ struct ContentView: View {
         .frame(height: 30)
     }
 
-    /// 标题条右侧的偏好设置入口。
-    ///
-    /// 标题条整体是 `WindowDragArea`，这里靠 SwiftUI 的命中测试分层：
-    /// 按钮在上层能收到点击，文字/Spacer 都设了 `allowsHitTesting(false)`，
-    /// 空白处的事件仍会落到下层拖动区。
-    private var settingsButton: some View {
-        Button {
-            if let delegate = NSApp.delegate as? AppDelegate {
-                delegate.showSetting()
-            } else {
-                NSLog("QuickOpener: NSApp.delegate 不是 AppDelegate，无法打开设置")
-            }
-        } label: {
-            Image(systemName: "gearshape")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(settingsHovering ? theme.accent : DS.text2)
-                .frame(width: 30, height: 28)
-                .background(settingsHovering ? DS.surface2 : Color.clear)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .onHover { settingsHovering = $0 }
-        .help(Text(LocalizedStringKey("menu_settings")))
-    }
-
     // MARK: - 输入行
 
     private var inputRow: some View {
@@ -159,8 +132,6 @@ struct ContentView: View {
             Text(matchCountText)
                 .font(DS.mono(11.5))
                 .foregroundStyle(DS.text3)
-
-            settingsButton
 
             addProjectButton
         }
