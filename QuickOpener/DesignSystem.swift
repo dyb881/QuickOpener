@@ -93,6 +93,11 @@ enum DS {
 struct VisualEffectBackground: NSViewRepresentable {
     var material: NSVisualEffectView.Material = .popover
     var blendingMode: NSVisualEffectView.BlendingMode = .behindWindow
+    /// 毛玻璃自身的不透明度（0...1）。
+    ///
+    /// 只调上层遮挡是不够的：`NSVisualEffectView` 的材质本身是实心的，
+    /// 遮挡层变淡后透出的是这层材质而不是桌面，看起来就像"透明度没反应"。
+    var intensity: Double = 1.0
 
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
@@ -100,12 +105,14 @@ struct VisualEffectBackground: NSViewRepresentable {
         view.blendingMode = blendingMode
         view.state = .active
         view.isEmphasized = false
+        view.alphaValue = intensity
         return view
     }
 
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
         nsView.material = material
         nsView.blendingMode = blendingMode
+        nsView.alphaValue = intensity
     }
 }
 
@@ -204,7 +211,8 @@ struct WindowBackdropView: View {
     var body: some View {
         ZStack {
             if let material = backdrop.material {
-                VisualEffectBackground(material: material)
+                // 传 intensity：透明度直接削弱毛玻璃本身，才能真的透出桌面
+                VisualEffectBackground(material: material, intensity: opacity)
             }
 
             DS.windowGradient.opacity(backdrop.overlay(userOpacity: opacity))

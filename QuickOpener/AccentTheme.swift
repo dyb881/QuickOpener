@@ -160,8 +160,11 @@ enum WindowBackdrop: String, CaseIterable, Identifiable {
     }
 
     /// 叠上用户透明度后的最终遮挡强度。
-    /// `solid` 也会跟着变透（成为半透明纯色），这样滑块在三种模式下都有意义。
+    ///
+    /// 不直接用 `baseOverlay * userOpacity`：那样拉到 35% 时遮挡只剩 0.19 以下，
+    /// 文字会直接糊在壁纸上。这里保留 30% 的保底遮挡，让变化明显但还能读。
     func overlay(userOpacity: Double) -> Double {
-        baseOverlay * userOpacity
+        let floor = baseOverlay * 0.3
+        return floor + (baseOverlay - floor) * userOpacity
     }
 }
