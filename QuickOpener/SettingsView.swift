@@ -337,7 +337,8 @@ struct SettingsView: View {
                             }
                         }
                         .labelsHidden()
-                        .frame(width: 216)
+                        // 不加固定宽度：菜单样式的 Picker 用内容自适应宽度，
+                        // 固定宽度会让控件在槽内居中、右侧空出一截，和下面的「重启」按钮对不齐
                         .onChange(of: appLanguage) { _, language in
                             // AppleLanguages UserDefaults 是设置每应用语言的唯一方案
                             UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
