@@ -2,9 +2,11 @@
 //  AccentTheme.swift
 //  QuickOpener
 //
-//  主题强调色：在设置界面选择，持久化到 UserDefaults，全局即时生效。
+//  外观设置：主题强调色 + 界面外观模式（跟随系统 / 亮色 / 暗色）。
+//  两者都持久化到 UserDefaults，切换后立即生效。
 //
 
+import AppKit
 import Combine
 import SwiftUI
 
@@ -35,22 +37,61 @@ enum AccentTheme: String, CaseIterable, Identifiable {
     }
 }
 
-/// 主题管理：读写主题色，变化时通过 `@Published` 驱动所有观察者重绘。
+/// 界面外观：跟随系统 / 强制亮色 / 强制暗色。
+enum AppearanceMode: String, CaseIterable, Identifiable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var localizedKey: String { "appearance_\(rawValue)" }
+
+    /// nil 表示跟随系统。
+    var nsAppearance: NSAppearance? {
+        switch self {
+        case .system: return nil
+        case .light:  return NSAppearance(named: .aqua)
+        case .dark:   return NSAppearance(named: .darkAqua)
+        }
+    }
+}
+
+/// 主题管理：读写强调色与外观模式，变化时驱动所有观察者重绘。
 @MainActor
 final class ThemeManager: ObservableObject {
     static let shared = ThemeManager()
 
-    private static let storageKey = "accentTheme"
+    private static let accentKey = "accentTheme"
+    private static let appearanceKey = "appearanceMode"
 
     @Published var theme: AccentTheme {
-        didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.storageKey) }
+        didSet { UserDefaults.standard.set(theme.rawValue, forKey: Self.accentKey) }
+    }
+
+    @Published var appearance: AppearanceMode {
+        didSet {
+            UserDefaults.standard.set(appearance.rawValue, forKey: Self.appearanceKey)
+            applyAppearance()
+        }
     }
 
     init() {
-        let saved = UserDefaults.standard.string(forKey: Self.storageKey)
-        theme = saved.flatMap(AccentTheme.init(rawValue:)) ?? .system
+        let savedAccent = UserDefaults.standard.string(forKey: Self.accentKey)
+        theme = savedAccent.flatMap(AccentTheme.init(rawValue:)) ?? .system
+        let savedAppearance = UserDefaults.standard.string(forKey: Self.appearanceKey)
+        appearance = savedAppearance.flatMap(AppearanceMode.init(rawValue:)) ?? .system
     }
 
     /// 当前生效的强调色（`system` 时回退到系统强调色）。
     var accent: Color { theme.presetColor ?? .accentColor }
+
+    /// 把外观应用到整个 App 与所有已存在的窗口，切换后无需重启。
+    func applyAppearance() {
+        let nsAppearance = appearance.nsAppearance
+        NSApp.appearance = nsAppearance
+        for window in NSApp.windows {
+            window.appearance = nsAppearance
+        }
+    }
 }

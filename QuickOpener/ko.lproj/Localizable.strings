@@ -79,3 +79,9 @@
 "foot_select" = "선택";
 "foot_open" = "열기";
 "foot_close" = "닫기";
+
+/* 外观模式 */
+"appearance_mode" = "화면 모드";
+"appearance_system" = "시스템 설정 따르기";
+"appearance_light" = "라이트";
+"appearance_dark" = "다크";

@@ -77,3 +77,9 @@
 "foot_select" = "Auswählen";
 "foot_open" = "Öffnen";
 "foot_close" = "Schließen";
+
+/* 外观模式 */
+"appearance_mode" = "Erscheinungsbild";
+"appearance_system" = "Systemeinstellung folgen";
+"appearance_light" = "Hell";
+"appearance_dark" = "Dunkel";

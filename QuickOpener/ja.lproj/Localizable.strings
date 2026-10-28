@@ -77,3 +77,9 @@
 "foot_select" = "選択";
 "foot_open" = "開く";
 "foot_close" = "閉じる";
+
+/* 外观模式 */
+"appearance_mode" = "外観モード";
+"appearance_system" = "システムに従う";
+"appearance_light" = "ライト";
+"appearance_dark" = "ダーク";

@@ -82,8 +82,8 @@ extension AppDelegate {
                 defer: false
             )
 
-            // 窗口保持不透明，标题栏由 AppKit 绘制（透明背景会把标题栏也变成没颜色）
-            newWindow.appearance = NSAppearance(named: .darkAqua)
+            // 窗口保持不透明，标题栏由 AppKit 绘制；外观跟随设置
+            newWindow.appearance = ThemeManager.shared.appearance.nsAppearance
             let hostingController = NSHostingController(rootView:
                 SettingsView()
                     .modelContainer(QuickOpenerApp.sharedModelContainer)

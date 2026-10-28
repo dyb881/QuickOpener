@@ -72,6 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     /// 应用程序启动完成时调用，装配菜单栏、快捷键与首次启动行为。
     func applicationDidFinishLaunching(_: Notification) {
+        ThemeManager.shared.applyAppearance() // 应用上次保存的外观模式（亮/暗/跟随系统）
         setupStatusItem() // 菜单栏图标与菜单（AppDelegate+StatusItem.swift）
         setupShortcutObserver() // 快捷键变化时刷新标题栏提示（AppDelegate+Keyboard.swift）
 
@@ -153,7 +154,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         newWindow.titlebarAppearsTransparent = true
         newWindow.titleVisibility = .hidden
         newWindow.styleMask.insert(.fullSizeContentView)
-        newWindow.appearance = NSAppearance(named: .darkAqua)
+        newWindow.appearance = ThemeManager.shared.appearance.nsAppearance
         let hostingController = NSHostingController(rootView:
             ContentView()
                 .modelContainer(QuickOpenerApp.sharedModelContainer)

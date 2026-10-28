@@ -110,17 +110,38 @@ struct SettingsView: View {
                     }
                 }
 
-                // 外观（主题色）
+                // 外观：界面模式 + 主题色
                 section("settings_appearance") {
                     card {
-                        HStack {
-                            Text(LocalizedStringKey("theme_color"))
-                                .font(.system(size: 12.5))
-                                .foregroundStyle(DS.text)
-                            Spacer(minLength: 12)
-                            HStack(spacing: 7) {
-                                ForEach(AccentTheme.allCases) { item in
-                                    themeSwatch(item)
+                        VStack(spacing: 12) {
+                            HStack {
+                                Text(LocalizedStringKey("appearance_mode"))
+                                    .font(.system(size: 12.5))
+                                    .foregroundStyle(DS.text)
+                                Spacer(minLength: 12)
+                                Picker("", selection: $theme.appearance) {
+                                    ForEach(AppearanceMode.allCases) { mode in
+                                        Text(LocalizedStringKey(mode.localizedKey)).tag(mode)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .labelsHidden()
+                                .frame(width: 216)
+                            }
+
+                            Rectangle()
+                                .fill(DS.line)
+                                .frame(height: 1)
+
+                            HStack {
+                                Text(LocalizedStringKey("theme_color"))
+                                    .font(.system(size: 12.5))
+                                    .foregroundStyle(DS.text)
+                                Spacer(minLength: 12)
+                                HStack(spacing: 7) {
+                                    ForEach(AccentTheme.allCases) { item in
+                                        themeSwatch(item)
+                                    }
                                 }
                             }
                         }
@@ -196,14 +217,7 @@ struct SettingsView: View {
                         HStack(spacing: 13) {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 11, style: .continuous)
-                                    .fill(LinearGradient(
-                                        colors: [
-                                            Color(red: 0.125, green: 0.149, blue: 0.227),
-                                            Color(red: 0.055, green: 0.067, blue: 0.098),
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ))
+                                    .fill(DS.iconPlate)
                                 Image(systemName: "rectangle.on.rectangle.angled")
                                     .font(.system(size: 19, weight: .light))
                                     .foregroundStyle(theme.accent)
@@ -234,17 +248,7 @@ struct SettingsView: View {
             .padding(22)
         }
         .frame(width: 520, height: 700)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 0.102, green: 0.122, blue: 0.165),
-                    Color(red: 0.043, green: 0.051, blue: 0.078),
-                    Color(red: 0.031, green: 0.039, blue: 0.059),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        .background(DS.windowGradient)
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }

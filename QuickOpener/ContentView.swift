@@ -30,16 +30,8 @@ struct ContentView: View {
         .frame(width: 300, height: 500)
         .background(
             ZStack {
-                VisualEffectBackground(material: .hudWindow)
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.102, green: 0.122, blue: 0.165).opacity(0.93),
-                        Color(red: 0.043, green: 0.051, blue: 0.078).opacity(0.96),
-                        Color(red: 0.031, green: 0.039, blue: 0.059).opacity(0.98),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+                VisualEffectBackground()
+                DS.windowGradient.opacity(0.97)
             }
         )
         .clipShape(RoundedRectangle(cornerRadius: DS.radius, style: .continuous))
@@ -82,7 +74,7 @@ struct ContentView: View {
                     .foregroundStyle(DS.text3)
                     .padding(.horizontal, 6)
                     .frame(height: 20)
-                    .background(Color.white.opacity(0.03))
+                    .background(DS.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 5, style: .continuous)
@@ -217,7 +209,7 @@ struct ContentView: View {
         }
         .padding(.horizontal, 12)
         .frame(height: 30)
-        .background(Color.white.opacity(0.02))
+        .background(DS.surface)
         .overlay(alignment: .top) {
             Rectangle().fill(DS.line).frame(height: 1)
         }
@@ -245,7 +237,7 @@ struct ContentView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(item.name)
                     .font(.system(size: 13))
-                    .foregroundStyle(isSelected ? Color.white : (isMissing ? DS.text3 : DS.text))
+                    .foregroundStyle(isSelected ? DS.textStrong : (isMissing ? DS.text3 : DS.text))
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text(isMissing

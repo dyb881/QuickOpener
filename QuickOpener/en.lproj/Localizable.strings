@@ -77,3 +77,9 @@
 "foot_select" = "Select";
 "foot_open" = "Open";
 "foot_close" = "Close";
+
+/* 外观模式 */
+"appearance_mode" = "Appearance Mode";
+"appearance_system" = "Follow System";
+"appearance_light" = "Light";
+"appearance_dark" = "Dark";
