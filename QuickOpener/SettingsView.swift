@@ -235,18 +235,15 @@ struct SettingsView: View {
         }
         .frame(width: 520, height: 700)
         .background(
-            ZStack {
-                VisualEffectBackground(material: .hudWindow)
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.102, green: 0.122, blue: 0.165).opacity(0.93),
-                        Color(red: 0.043, green: 0.051, blue: 0.078).opacity(0.96),
-                        Color(red: 0.031, green: 0.039, blue: 0.059).opacity(0.98),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            }
+            LinearGradient(
+                colors: [
+                    Color(red: 0.102, green: 0.122, blue: 0.165),
+                    Color(red: 0.043, green: 0.051, blue: 0.078),
+                    Color(red: 0.031, green: 0.039, blue: 0.059),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         )
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {

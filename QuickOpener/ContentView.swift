@@ -72,21 +72,26 @@ struct ContentView: View {
 
     /// 自绘标题栏：左侧让出窗口红绿灯位置，右侧显示当前唤起快捷键。
     private var titleBar: some View {
-        HStack(spacing: 0) {
-            Spacer(minLength: 0)
-            Text(currentShortcut)
-                .font(DS.mono(10))
-                .foregroundStyle(DS.text3)
-                .padding(.horizontal, 6)
-                .frame(height: 20)
-                .background(Color.white.opacity(0.03))
-                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 5, style: .continuous)
-                        .strokeBorder(DS.line, lineWidth: 1)
-                )
+        ZStack {
+            WindowDragArea() // 整条标题栏都能拖动窗口
+
+            HStack(spacing: 0) {
+                Spacer(minLength: 0)
+                Text(currentShortcut)
+                    .font(DS.mono(10))
+                    .foregroundStyle(DS.text3)
+                    .padding(.horizontal, 6)
+                    .frame(height: 20)
+                    .background(Color.white.opacity(0.03))
+                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .strokeBorder(DS.line, lineWidth: 1)
+                    )
+            }
+            .padding(.trailing, 10)
+            .allowsHitTesting(false) // 让拖动区拿到鼠标事件
         }
-        .padding(.trailing, 10)
         .frame(height: 38)
     }
 

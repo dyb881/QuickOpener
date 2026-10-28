@@ -103,6 +103,24 @@ struct GlassPanel<Content: View>: View {
     }
 }
 
+/// 标题栏拖动区。
+///
+/// `isMovableByWindowBackground` 只对未被内容消费的背景生效，
+/// 窗口铺满 SwiftUI 视图后拖动会失效，因此用 AppKit 视图显式接管。
+struct WindowDragArea: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { DragView() }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class DragView: NSView {
+        override var mouseDownCanMoveWindow: Bool { true }
+
+        override func mouseDown(with event: NSEvent) {
+            window?.performDrag(with: event)
+        }
+    }
+}
+
 /// 键帽：统一快捷键徽标的字形、圆角与描边。
 struct KeyCap: View {
     let text: String

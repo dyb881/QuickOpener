@@ -82,9 +82,7 @@ extension AppDelegate {
                 defer: false
             )
 
-            // 内容区用玻璃材质，但保留系统标题栏（标题与背景由 AppKit 绘制）
-            newWindow.isOpaque = false
-            newWindow.backgroundColor = .clear
+            // 窗口保持不透明，标题栏由 AppKit 绘制（透明背景会把标题栏也变成没颜色）
             newWindow.appearance = NSAppearance(named: .darkAqua)
             let hostingController = NSHostingController(rootView:
                 SettingsView()
