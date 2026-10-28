@@ -89,3 +89,12 @@
 "kpi_count" = "次數";
 "kpi_size" = "大小";
 "kpi_branch" = "分支";
+
+/* 右键菜单补充项 */
+"context_open" = "開啟";
+"context_open_with" = "以其他應用程式開啟…";
+"context_open_in_terminal" = "在終端機中開啟";
+"context_open_in_code" = "在 VS Code 中開啟";
+"context_copy_name" = "複製名稱";
+"context_copy_file" = "複製檔案";
+"context_recalculate" = "重新計算大小";

@@ -200,12 +200,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let margin: CGFloat = 8
 
-        var x = mouse.x - 390 // 窗口水平居中于光标（780 / 2）
-
-        // 光标落在窗口顶部内侧 `cursorInset` 处（正好是输入行那一格）：
-        // 窗口向上兜住鼠标、主要向下展开，比「顶边贴在光标下方」贴得近得多
-        let cursorInset: CGFloat = 44
-        var y = mouse.y + cursorInset - size.height
+        // 窗口以光标为中心弹出（行列都居中）
+        var x = mouse.x - size.width / 2
+        var y = mouse.y - size.height / 2
 
         // 钳制到可见区域内（多显示器 / 靠近屏幕边缘时不会跑出屏幕）
         if visible.width > size.width + margin * 2 {

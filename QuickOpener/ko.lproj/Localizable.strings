@@ -91,3 +91,12 @@
 "kpi_count" = "사용 횟수";
 "kpi_size" = "크기";
 "kpi_branch" = "브랜치";
+
+/* 右键菜单补充项 */
+"context_open" = "열기";
+"context_open_with" = "다른 앱으로 열기…";
+"context_open_in_terminal" = "터미널에서 열기";
+"context_open_in_code" = "VS Code에서 열기";
+"context_copy_name" = "이름 복사";
+"context_copy_file" = "파일 복사";
+"context_recalculate" = "크기 다시 계산";

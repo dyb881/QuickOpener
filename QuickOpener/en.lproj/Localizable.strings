@@ -89,3 +89,12 @@
 "kpi_count" = "Opens";
 "kpi_size" = "Size";
 "kpi_branch" = "Branch";
+
+/* 右键菜单补充项 */
+"context_open" = "Open";
+"context_open_with" = "Open With…";
+"context_open_in_terminal" = "Open in Terminal";
+"context_open_in_code" = "Open in VS Code";
+"context_copy_name" = "Copy Name";
+"context_copy_file" = "Copy File";
+"context_recalculate" = "Recalculate Size";

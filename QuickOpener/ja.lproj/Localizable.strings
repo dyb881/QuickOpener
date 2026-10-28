@@ -89,3 +89,12 @@
 "kpi_count" = "回数";
 "kpi_size" = "サイズ";
 "kpi_branch" = "ブランチ";
+
+/* 右键菜单补充项 */
+"context_open" = "開く";
+"context_open_with" = "別のアプリで開く…";
+"context_open_in_terminal" = "ターミナルで開く";
+"context_open_in_code" = "VS Code で開く";
+"context_copy_name" = "名前をコピー";
+"context_copy_file" = "ファイルをコピー";
+"context_recalculate" = "サイズを再計算";

@@ -89,3 +89,12 @@
 "kpi_count" = "Aperturas";
 "kpi_size" = "Tamaño";
 "kpi_branch" = "Rama";
+
+/* 右键菜单补充项 */
+"context_open" = "Abrir";
+"context_open_with" = "Abrir con…";
+"context_open_in_terminal" = "Abrir en Terminal";
+"context_open_in_code" = "Abrir en VS Code";
+"context_copy_name" = "Copiar nombre";
+"context_copy_file" = "Copiar archivo";
+"context_recalculate" = "Recalcular tamaño";

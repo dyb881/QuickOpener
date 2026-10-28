@@ -409,12 +409,53 @@ struct ContentView: View {
             item.open()
         }
         .contextMenu {
+            // ── 打开 ──
+            Button {
+                item.open()
+            } label: {
+                Label(LocalizedStringKey("context_open"), systemImage: "arrow.up.forward.app")
+            }
+
+            if dataManager.applications.count >= 2 {
+                Menu {
+                    ForEach(dataManager.applications.filter { $0.path != item.applicationPath }, id: \.path) { app in
+                        appButton(app) {
+                            openWith(app.url, project: item)
+                        }
+                    }
+                } label: {
+                    Label(LocalizedStringKey("context_open_with"), systemImage: "square.on.square.dashed")
+                }
+            }
+
+            Divider()
+
+            // ── 定位 ──
             Button {
                 NSWorkspace.shared.activateFileViewerSelecting([item.url])
             } label: {
                 Label(LocalizedStringKey("context_reveal_in_finder"), systemImage: "folder")
             }
 
+            if let terminal = terminalAppURL {
+                Button {
+                    openWith(terminal, project: item)
+                } label: {
+                    Label(LocalizedStringKey("context_open_in_terminal"), systemImage: "terminal")
+                }
+            }
+
+            if let code = vsCodeAppURL {
+                Button {
+                    openWith(code, project: item)
+                } label: {
+                    Label(LocalizedStringKey("context_open_in_code"), systemImage: "chevron.left.forwardslash.chevron.right")
+                }
+            }
+
+            Divider()
+
+            // ── 复制 ──
             Button {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(item.path, forType: .string)
@@ -422,8 +463,23 @@ struct ContentView: View {
                 Label(LocalizedStringKey("context_copy_path"), systemImage: "doc.on.doc")
             }
 
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(item.name, forType: .string)
+            } label: {
+                Label(LocalizedStringKey("context_copy_name"), systemImage: "textformat")
+            }
+
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.writeObjects([item.url as NSURL])
+            } label: {
+                Label(LocalizedStringKey("context_copy_file"), systemImage: "doc.on.clipboard")
+            }
+
             Divider()
 
+            // ── 维护 ──
             Picker(LocalizedStringKey("context_set_default_app"), selection: Binding(
                 get: { item.applicationPath },
                 set: { dataManager.setApplicationPath($0, for: item) }
@@ -431,6 +487,13 @@ struct ContentView: View {
                 ForEach(dataManager.applications, id: \.path) { app in
                     Text(app.name).tag(app.path)
                 }
+            }
+
+            Button {
+                inspector.forget(path: item.path)
+                inspector.inspect(project: item)
+            } label: {
+                Label(LocalizedStringKey("context_recalculate"), systemImage: "arrow.clockwise")
             }
 
             Divider()
@@ -615,6 +678,39 @@ struct ContentView: View {
         .menuIndicator(.hidden)
         .frame(width: 30, height: 28)
         .help(Text(LocalizedStringKey("add_projects")))
+    }
+
+    /// 用指定应用打开项目（「用其他应用打开 / 终端 / VS Code」共用）。
+    ///
+    /// 成功后与 `ProjectModel.open()` 一致地收起窗口；失败保留窗口让用户重试。
+    private func openWith(_ appURL: URL, project: ProjectModel) {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+
+        // 与 ProjectModel.open() 一致：沙盒下交给别的应用前先开安全作用域
+        let scopedURL = project.bookmarkURL
+        let urlToUse = scopedURL ?? project.url
+        let accessGranted = scopedURL?.startAccessingSecurityScopedResource() ?? false
+
+        NSWorkspace.shared.open([urlToUse], withApplicationAt: appURL, configuration: configuration) { _, error in
+            if accessGranted, let scopedURL {
+                scopedURL.stopAccessingSecurityScopedResource()
+            }
+            guard error == nil else { return }
+            Task { @MainActor in
+                QuickOpenerApp.dataManager.hideHostingWindow()
+            }
+        }
+    }
+
+    /// 系统「终端」的位置；找不到就不显示该菜单项。
+    private var terminalAppURL: URL? {
+        NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.Terminal")
+    }
+
+    /// VS Code 的位置；未安装就不显示该菜单项。
+    private var vsCodeAppURL: URL? {
+        NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.microsoft.VSCode")
     }
 
     private func appButton(_ app: ApplicationModel, action: @escaping () -> Void) -> some View {
