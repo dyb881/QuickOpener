@@ -47,13 +47,19 @@ final class ProjectInspector: ObservableObject {
         return value
     }
 
-    /// 请求巡检指定路径（幂等）。
-    func inspect(path: String) {
+    /// 请求巡检某个项目（幂等）。
+    ///
+    /// 必须带书签：app 开了沙盒，裸 `FileManager` 读用户目录只在本次授权内有效，
+    /// 重启后不解析书签就拿不到访问权，遍历会静默失败。
+    func inspect(project: ProjectModel) {
+        let path = project.path
+        let bookmark = project.bookmarkData
+
         if stats[path] == nil, !inFlight.contains(path) {
             inFlight.insert(path)
             let limit = entryLimit
             Task.detached(priority: .utility) { [weak self] in
-                let result = Self.measure(path: path, limit: limit)
+                let result = Self.measure(path: path, bookmark: bookmark, limit: limit)
                 await self?.applyStats(result, for: path)
             }
         }
@@ -62,10 +68,16 @@ final class ProjectInspector: ObservableObject {
         if branches[path] == nil, !inFlight.contains(gitKey) {
             inFlight.insert(gitKey)
             Task.detached(priority: .utility) { [weak self] in
-                let name = Self.readBranch(path: path)
+                let name = Self.readBranch(path: path, bookmark: bookmark)
                 await self?.applyBranch(name, for: path)
             }
         }
+    }
+
+    /// 项目被删除时清掉缓存，避免路径复用后显示旧数值。
+    func forget(path: String) {
+        stats[path] = nil
+        branches[path] = nil
     }
 
     // MARK: - 结果回填
@@ -82,8 +94,44 @@ final class ProjectInspector: ObservableObject {
 
     // MARK: - 后台工作
 
+    /// 在安全作用域内执行读盘操作（沙盒必需）。
+    nonisolated private static func withScopedAccess<T>(
+        path: String,
+        bookmark: Data?,
+        _ body: (String) -> T
+    ) -> T {
+        var scopedURL: URL?
+        var accessing = false
+
+        if let bookmark {
+            var isStale = false
+            if let url = try? URL(
+                resolvingBookmarkData: bookmark,
+                options: .withSecurityScope,
+                relativeTo: nil,
+                bookmarkDataIsStale: &isStale
+            ) {
+                scopedURL = url
+                accessing = url.startAccessingSecurityScopedResource()
+            }
+        }
+
+        defer {
+            if accessing { scopedURL?.stopAccessingSecurityScopedResource() }
+        }
+
+        // 书签解析成功就用它解析出来的路径（iCloud 路径可能已迁移）
+        return body(scopedURL?.path ?? path)
+    }
+
     /// 遍历目录累计字节数与条目数。返回 nil 表示路径不存在或不可读。
-    nonisolated private static func measure(path: String, limit: Int) -> DirectoryStats? {
+    nonisolated private static func measure(path: String, bookmark: Data?, limit: Int) -> DirectoryStats? {
+        withScopedAccess(path: path, bookmark: bookmark) { resolved in
+            measureUnscoped(path: resolved, limit: limit)
+        }
+    }
+
+    nonisolated private static func measureUnscoped(path: String, limit: Int) -> DirectoryStats? {
         let fm = FileManager.default
         var isDirectory: ObjCBool = false
         guard fm.fileExists(atPath: path, isDirectory: &isDirectory), isDirectory.boolValue,
@@ -113,7 +161,13 @@ final class ProjectInspector: ObservableObject {
     }
 
     /// 读 `.git/HEAD` 拿分支名；detached HEAD 时退回短 hash。
-    nonisolated private static func readBranch(path: String) -> String? {
+    nonisolated private static func readBranch(path: String, bookmark: Data?) -> String? {
+        withScopedAccess(path: path, bookmark: bookmark) { resolved in
+            readBranchUnscoped(path: resolved)
+        }
+    }
+
+    nonisolated private static func readBranchUnscoped(path: String) -> String? {
         let headPath = (path as NSString).appendingPathComponent(".git/HEAD")
         guard let text = try? String(contentsOfFile: headPath, encoding: .utf8) else { return nil }
 

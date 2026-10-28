@@ -61,15 +61,15 @@ struct ContentView: View {
         .onChange(of: dataManager.filterText) { _, _ in
             dataManager.selectedIndex = 0
         }
-        .onChange(of: dataManager.selectedProject?.path) { _, newPath in
+        .onChange(of: dataManager.selectedProject?.path) { _, _ in
             // 选择变化时触发巡检（幂等，已算过的不会重复读盘）
-            if let newPath {
-                inspector.inspect(path: newPath)
+            if let project = dataManager.selectedProject {
+                inspector.inspect(project: project)
             }
         }
         .onAppear {
-            if let path = dataManager.selectedProject?.path {
-                inspector.inspect(path: path)
+            if let project = dataManager.selectedProject {
+                inspector.inspect(project: project)
             }
         }
     }

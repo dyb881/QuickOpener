@@ -442,6 +442,7 @@ class DataManager: ObservableObject {
         try? modelContext.save()
         projects = projects.filter { $0.path != removedPath }
         missingPaths.remove(removedPath)
+        ProjectInspector.shared.forget(path: removedPath) // 清掉巡检缓存，避免同一路径重新添加后显示旧数值
         if missingProject?.path == removedPath {
             missingProject = nil
         }
