@@ -383,8 +383,12 @@ struct SettingsView: View {
     private var dataPane: some View {
         section("settings_data") {
             card {
-                VStack(alignment: .leading, spacing: 9) {
+                VStack(spacing: 10) {
                     HStack(spacing: 8) {
+                        Text(LocalizedStringKey("label_data_backup"))
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(DS.text)
+                        Spacer(minLength: 12)
                         Button(LocalizedStringKey("button_export_projects")) {
                             exportProjects()
                         }
@@ -393,17 +397,19 @@ struct SettingsView: View {
                             importProjects()
                         }
                         .controlSize(.small)
-                        Spacer(minLength: 0)
                     }
 
                     Rectangle().fill(DS.line).frame(height: 1)
 
                     HStack(spacing: 8) {
+                        Text(LocalizedStringKey("label_data_cache"))
+                            .font(.system(size: 12.5))
+                            .foregroundStyle(DS.text)
+                        Spacer(minLength: 12)
                         Button(LocalizedStringKey("menu_reset_cache")) {
                             showClearCacheAlert = true
                         }
                         .controlSize(.small)
-                        Spacer(minLength: 0)
                     }
                 }
             }

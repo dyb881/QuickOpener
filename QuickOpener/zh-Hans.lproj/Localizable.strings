@@ -106,3 +106,5 @@
 "backdrop_glass" = "玻璃";
 "label_opacity" = "透明度";
 "button_restart" = "重启";
+"label_data_backup" = "备份与恢复";
+"label_data_cache" = "缓存";

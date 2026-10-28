@@ -106,3 +106,5 @@
 "backdrop_glass" = "Glas";
 "label_opacity" = "Deckkraft";
 "button_restart" = "Neu starten";
+"label_data_backup" = "Sichern & Wiederherstellen";
+"label_data_cache" = "Cache";

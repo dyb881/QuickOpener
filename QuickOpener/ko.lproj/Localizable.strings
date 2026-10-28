@@ -108,3 +108,5 @@
 "backdrop_glass" = "유리";
 "label_opacity" = "불투명도";
 "button_restart" = "재시작";
+"label_data_backup" = "백업 및 복원";
+"label_data_cache" = "캐시";

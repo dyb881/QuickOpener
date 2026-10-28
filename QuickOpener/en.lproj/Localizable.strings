@@ -106,3 +106,5 @@
 "backdrop_glass" = "Glass";
 "label_opacity" = "Opacity";
 "button_restart" = "Restart";
+"label_data_backup" = "Backup & Restore";
+"label_data_cache" = "Cache";
