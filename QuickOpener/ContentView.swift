@@ -151,6 +151,10 @@ struct ContentView: View {
             .textFieldStyle(.plain)
             .font(.system(size: 18))
             .focused($isFilterFocused)
+            // 撑满整行高度：默认只占文字那一行（约 22pt），
+            // 上下留白处鼠标不会变成 I 字形，也点不进去
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
 
             Text(matchCountText)
                 .font(DS.mono(11.5))
@@ -160,6 +164,9 @@ struct ContentView: View {
         }
         .padding(.horizontal, 16)
         .frame(height: 56)
+        // 点放大镜、计数或余白也聚焦搜索框（按钮自己消费点击，不受影响）
+        .contentShape(Rectangle())
+        .onTapGesture { isFilterFocused = true }
         .overlay(alignment: .bottom) {
             Rectangle().fill(DS.line).frame(height: 1)
         }
