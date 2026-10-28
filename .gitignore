@@ -7,3 +7,7 @@ xcuserdata/
 *.xcuserstate
 DerivedData/
 build/
+
+# 发布产物（走 GitHub Releases，不进版本库）
+dist/
+*.dmg

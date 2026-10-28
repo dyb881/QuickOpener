@@ -123,9 +123,24 @@ xcodebuild test -project QuickOpener.xcodeproj -scheme QuickOpener \
 
 **自签名 DMG，不做 notarization**（无付费 Apple Developer Program 会员）。
 
+产物统一放仓库内的 `dist/`（已在 `.gitignore` 中排除，不进版本库）：
+
 ```bash
+# 1) Release 构建
 xcodebuild -project QuickOpener.xcodeproj -scheme QuickOpener -configuration Release \
   -destination 'platform=macOS' -derivedDataPath /tmp/qo-release build
+
+# 2) 组装 staging（ditto 保留签名与扩展属性）
+STAGE=/tmp/qo-dmg-stage
+rm -rf "$STAGE" && mkdir -p "$STAGE" dist
+ditto /tmp/qo-release/Build/Products/Release/QuickOpener.app "$STAGE/QuickOpener.app"
+ln -s /Applications "$STAGE/Applications"
+# 放一份「安装说明.txt」到 "$STAGE"
+
+# 3) 打包到 dist/
+hdiutil create -volname "QuickOpener 1.2.0" -srcfolder "$STAGE" -ov -format UDZO \
+  dist/QuickOpener-1.2.0.dmg
+shasum -a 256 dist/QuickOpener-1.2.0.dmg
 ```
 
 接收方首次打开需要**右键 → 打开**，或执行：
