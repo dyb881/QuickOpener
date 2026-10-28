@@ -69,12 +69,12 @@ struct SettingsView: View {
                 }
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.5), radius: 1, y: 0.5)
                 }
             }
-            .frame(width: 19, height: 19)
+            .frame(width: 22, height: 22)
             .overlay(Circle().strokeBorder(Color.primary.opacity(0.18), lineWidth: 1))
             .overlay(
                 Circle()
@@ -91,7 +91,7 @@ struct SettingsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 15) {
                 // 通用
                 section("settings_general") {
                     card {
@@ -114,7 +114,7 @@ struct SettingsView: View {
                 // 外观：界面模式 + 主题色
                 section("settings_appearance") {
                     card {
-                        VStack(spacing: 12) {
+                        VStack(spacing: 10) {
                             HStack {
                                 Text(LocalizedStringKey("appearance_mode"))
                                     .font(.system(size: 12.5))
@@ -139,7 +139,7 @@ struct SettingsView: View {
                                     .font(.system(size: 12.5))
                                     .foregroundStyle(DS.text)
                                 Spacer(minLength: 12)
-                                HStack(spacing: 7) {
+                                HStack(spacing: 10) {
                                     ForEach(AccentTheme.allCases) { item in
                                         themeSwatch(item)
                                     }
@@ -177,7 +177,7 @@ struct SettingsView: View {
                                 Slider(value: $theme.windowOpacity, in: 0.35...1.0)
                                     .controlSize(.small)
                                     .tint(theme.accent)
-                                    .frame(width: 150)
+                                    .frame(width: 176)
                                 Text(verbatim: "\(Int((theme.windowOpacity * 100).rounded()))%")
                                     .font(DS.mono(11))
                                     .foregroundStyle(DS.text3)
@@ -190,7 +190,7 @@ struct SettingsView: View {
                 // 语言
                 section("settings_language") {
                     card {
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: 9) {
                             HStack {
                                 Text(LocalizedStringKey("label_language"))
                                     .font(.system(size: 12.5))
@@ -202,16 +202,19 @@ struct SettingsView: View {
                                     }
                                 }
                                 .labelsHidden()
-                                .frame(width: 170)
+                                .frame(width: 216)
                                 .onChange(of: appLanguage) { _, language in
                                     // AppleLanguages UserDefaults 是设置每应用语言的唯一方案
                                     UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
                                 }
                             }
-                            Button(LocalizedStringKey("restart_takes_effect")) {
-                                restartApp()
+                            HStack {
+                                Spacer(minLength: 0)
+                                Button(LocalizedStringKey("restart_takes_effect")) {
+                                    restartApp()
+                                }
+                                .controlSize(.small)
                             }
-                            .controlSize(.small)
                         }
                     }
                 }
@@ -236,7 +239,7 @@ struct SettingsView: View {
                 // 数据
                 section("settings_data") {
                     card {
-                        VStack(alignment: .leading, spacing: 11) {
+                        VStack(alignment: .leading, spacing: 9) {
                             HStack(spacing: 8) {
                                 Button(LocalizedStringKey("button_export_projects")) {
                                     exportProjects()
@@ -275,9 +278,9 @@ struct SettingsView: View {
                                     .font(.system(size: 19, weight: .light))
                                     .foregroundStyle(theme.accent)
                             }
-                            .frame(width: 44, height: 44)
+                            .frame(width: 40, height: 40)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
                                     .strokeBorder(DS.line2, lineWidth: 1)
                             )
 
@@ -352,8 +355,8 @@ struct SettingsView: View {
     /// 卡片容器：淡色底 + 1px 描边 + 圆角。
     private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
-            .padding(.horizontal, 13)
-            .padding(.vertical, 11)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(DS.surface)
             .clipShape(RoundedRectangle(cornerRadius: DS.cardRadius, style: .continuous))
