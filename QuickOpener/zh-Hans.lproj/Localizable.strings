@@ -7,6 +7,7 @@
 "label_shortcut" = "快捷键：";
 "button_reset_shortcut" = "重置快捷键";
 "settings_about" = "关于";
+"app_name" = "QuickOpener";
 "app_description_short" = "快速启动和管理您的项目";
 "app_description_long" = "使用全局快捷键（默认 Option+Z）随时打开项目选择窗口，提升工作效率。";
 

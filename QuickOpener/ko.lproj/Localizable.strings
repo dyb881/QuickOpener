@@ -7,6 +7,7 @@
 "label_shortcut" = "단축키:";
 "button_reset_shortcut" = "단축키 초기화";
 "settings_about" = "정보";
+"app_name" = "QuickOpener";
 "app_description_short" = "프로젝트 빠른 실행 및 관리";
 "app_description_long" = "전역 단축키(기본 Option+Z)를 사용하여 언제든지 프로젝트 선택 창을 열어 작업 효율성을 높입니다.";
 

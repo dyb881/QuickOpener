@@ -50,7 +50,7 @@ struct QuickOpenerApp: App {
 /// 应用程序代理，管理菜单栏图标、全局快捷键和窗口的生命周期。
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     /// 项目窗口的内容尺寸（与 ContentView 的固定 frame 保持一致）。
-    private static let contentSize = NSSize(width: 560, height: 340)
+    private static let contentSize = NSSize(width: 680, height: 440)
 
     /// 主窗口引用，存储当前打开的窗口。
     var window: NSWindow?
@@ -201,7 +201,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let margin: CGFloat = 8
         let gap: CGFloat = 8
 
-        var x = mouse.x - 280 // 窗口水平居中于光标
+        var x = mouse.x - 340 // 窗口水平居中于光标（680 / 2）
         var y = mouse.y - size.height - gap
 
         // 钳制到可见区域内（多显示器 / 靠近屏幕边缘时不会跑出屏幕）

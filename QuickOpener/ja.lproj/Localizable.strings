@@ -7,6 +7,7 @@
 "label_shortcut" = "ショートカット：";
 "button_reset_shortcut" = "ショートカットをリセット";
 "settings_about" = "このアプリについて";
+"app_name" = "QuickOpener";
 "app_description_short" = "プロジェクトのクイック起動と管理";
 "app_description_long" = "グローバルショートカット（デフォルト Option+Z）を使用して、いつでもプロジェクト選択ウィンドウを開き、作業効率を向上させます。";
 

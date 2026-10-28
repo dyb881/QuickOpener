@@ -7,6 +7,7 @@
 "label_shortcut" = "Raccourci :";
 "button_reset_shortcut" = "Réinitialiser le raccourci";
 "settings_about" = "À propos";
+"app_name" = "QuickOpener";
 "app_description_short" = "Lancement rapide et gestion de vos projets";
 "app_description_long" = "Utilisez le raccourci global (Option+Z par défaut) pour ouvrir à tout moment la fenêtre de sélection de projet et améliorer votre efficacité.";
 
