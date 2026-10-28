@@ -95,7 +95,8 @@ struct SettingsView: View {
             sidebar
             contentPane
         }
-        .frame(width: 760, height: 300)
+        .frame(width: 760)
+        .frame(minHeight: 300, maxHeight: .infinity) // 高度跟随窗口（含标题栏区域），背景才能铺满
         .background(WindowBackdropView(backdrop: theme.backdrop, opacity: theme.windowOpacity))
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
@@ -353,6 +354,7 @@ struct SettingsView: View {
                         }
                         .controlSize(.small)
                     }
+                    .frame(maxWidth: .infinity) // VStack(alignment: .leading) 里不撑满，Spacer 会失效
                     .foregroundStyle(DS.text3)
                 }
             }
