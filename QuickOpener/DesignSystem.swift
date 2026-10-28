@@ -160,6 +160,16 @@ struct WindowDragArea: NSViewRepresentable {
         override func mouseDown(with event: NSEvent) {
             window?.performDrag(with: event)
         }
+
+        /// 只在自身 bounds 内响应。
+        ///
+        /// NSViewRepresentable 的 NSView 会先于同层 SwiftUI 控件拿到 AppKit 事件，
+        /// 一旦它的 bounds 算得比预期大，就会把旁边按钮的点击吞掉（按下变成拖窗口）。
+        /// 这里显式收敛命中范围，保证按钮区域不被覆盖。
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            guard !isHidden, alphaValue > 0 else { return nil }
+            return bounds.contains(convert(point, from: superview)) ? self : nil
+        }
     }
 }
 

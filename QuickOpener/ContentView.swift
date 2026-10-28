@@ -81,34 +81,35 @@ struct ContentView: View {
     /// 细标题条：整条作为窗口拖动区（SwiftUI 铺满内容后
     /// `isMovableByWindowBackground` 会失效，必须显式接管）。
     private var titleBar: some View {
-        ZStack {
-            WindowDragArea()
+        HStack(spacing: 8) {
+            // 拖动区只覆盖左侧这一段：WindowDragArea 是真实 NSView，
+            // 它的 mouseDown 会直接 performDrag，压在下面的 SwiftUI 按钮永远收不到点击。
+            // 所以齿轮和快捷键徽标必须放在这个 NSView 的矩形之外。
+            ZStack(alignment: .leading) {
+                WindowDragArea()
 
-            HStack(spacing: 8) {
                 Text(LocalizedStringKey("app_name"))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(DS.text3)
-                    .allowsHitTesting(false)
-
-                Spacer(minLength: 0)
-                    .allowsHitTesting(false)
-
-                settingsButton
-
-                Text(currentShortcut)
-                    .font(DS.mono(11))
-                    .foregroundStyle(DS.text3)
-                    .padding(.horizontal, 6)
-                    .frame(height: 20)
-                    .background(DS.surface)
-                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .strokeBorder(DS.line, lineWidth: 1)
-                    )
+                    .padding(.leading, 14)
                     .allowsHitTesting(false)
             }
-            .padding(.horizontal, 14)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            settingsButton
+
+            Text(currentShortcut)
+                .font(DS.mono(11))
+                .foregroundStyle(DS.text3)
+                .padding(.horizontal, 6)
+                .frame(height: 20)
+                .background(DS.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .strokeBorder(DS.line, lineWidth: 1)
+                )
+                .padding(.trailing, 14)
         }
         .frame(height: 30)
     }
@@ -120,7 +121,11 @@ struct ContentView: View {
     /// 空白处的事件仍会落到下层拖动区。
     private var settingsButton: some View {
         Button {
-            (NSApp.delegate as? AppDelegate)?.showSetting()
+            if let delegate = NSApp.delegate as? AppDelegate {
+                delegate.showSetting()
+            } else {
+                NSLog("QuickOpener: NSApp.delegate 不是 AppDelegate，无法打开设置")
+            }
         } label: {
             Image(systemName: "gearshape")
                 .font(.system(size: 11, weight: .medium))
