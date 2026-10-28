@@ -89,84 +89,167 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        // Form 在固定高度下不会自己滚动，内容超长会被裁掉；
-        // 用 ScrollView 包住让它可滚动，窗口尺寸保持固定
         ScrollView {
-            Form {
-            Section(header: Text(LocalizedStringKey("settings_general")).font(.headline)) {
-                Toggle(isOn: $launchAtLogin) {
-                    Text(LocalizedStringKey("settings_launch_at_login"))
-                }
-                .onChange(of: launchAtLogin) { _, enabled in
-                    updateLaunchAtLogin(enabled)
-                }
-            }.padding(.vertical, 5)
-
-            Section(header: Text(LocalizedStringKey("settings_appearance")).font(.headline)) {
-                HStack {
-                    Text(LocalizedStringKey("theme_color"))
-                    Spacer()
-                    HStack(spacing: 7) {
-                        ForEach(AccentTheme.allCases) { item in
-                            themeSwatch(item)
+            VStack(alignment: .leading, spacing: 18) {
+                // 通用
+                section("settings_general") {
+                    card {
+                        HStack {
+                            Text(LocalizedStringKey("settings_launch_at_login"))
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(DS.text)
+                            Spacer(minLength: 12)
+                            Toggle("", isOn: $launchAtLogin)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .tint(theme.accent)
+                                .onChange(of: launchAtLogin) { _, enabled in
+                                    updateLaunchAtLogin(enabled)
+                                }
                         }
                     }
                 }
-            }.padding(.vertical, 5)
 
-            Section(header: Text(LocalizedStringKey("settings_language")).font(.headline)) {
-                HStack {
-                    Text(LocalizedStringKey("label_language"))
-                    Picker("", selection: $appLanguage) {
-                        ForEach(languages, id: \.1) { name, code in
-                            Text(LocalizedStringKey(name)).tag(code)
+                // 外观（主题色）
+                section("settings_appearance") {
+                    card {
+                        HStack {
+                            Text(LocalizedStringKey("theme_color"))
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(DS.text)
+                            Spacer(minLength: 12)
+                            HStack(spacing: 7) {
+                                ForEach(AccentTheme.allCases) { item in
+                                    themeSwatch(item)
+                                }
+                            }
                         }
                     }
-                    .labelsHidden()
-                    .onChange(of: appLanguage) { _, language in
-                        // AppleLanguages UserDefaults 是设置每应用语言的唯一方案
-                        // macOS 通过 System Settings → Language & Region 也支持每应用语言设置，
-                        // 但无公开的编程 API，UserDefaults hack 仍是行业标准做法
-                        UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
-                    }
-                    Button(LocalizedStringKey("restart_takes_effect")) {
-                        restartApp()
+                }
+
+                // 语言
+                section("settings_language") {
+                    card {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Text(LocalizedStringKey("label_language"))
+                                    .font(.system(size: 12.5))
+                                    .foregroundStyle(DS.text)
+                                Spacer(minLength: 12)
+                                Picker("", selection: $appLanguage) {
+                                    ForEach(languages, id: \.1) { name, code in
+                                        Text(LocalizedStringKey(name)).tag(code)
+                                    }
+                                }
+                                .labelsHidden()
+                                .frame(width: 170)
+                                .onChange(of: appLanguage) { _, language in
+                                    // AppleLanguages UserDefaults 是设置每应用语言的唯一方案
+                                    UserDefaults.standard.set(language.isEmpty ? nil : [language], forKey: "AppleLanguages")
+                                }
+                            }
+                            Button(LocalizedStringKey("restart_takes_effect")) {
+                                restartApp()
+                            }
+                            .controlSize(.small)
+                        }
                     }
                 }
-            }.padding(.vertical, 5)
 
-            Section(header: Text(LocalizedStringKey("settings_shortcuts")).font(.headline)) {
-                HStack {
-                    Text(LocalizedStringKey("label_shortcut"))
-                    KeyboardShortcuts.Recorder(for: .toggleProjectOpener)
-                    Button(LocalizedStringKey("button_reset_shortcut")) {
-                        KeyboardShortcuts.reset(.toggleProjectOpener)
+                // 快捷键
+                section("settings_shortcuts") {
+                    card {
+                        HStack {
+                            Text(LocalizedStringKey("label_shortcut"))
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(DS.text)
+                            Spacer(minLength: 12)
+                            KeyboardShortcuts.Recorder(for: .toggleProjectOpener)
+                            Button(LocalizedStringKey("button_reset_shortcut")) {
+                                KeyboardShortcuts.reset(.toggleProjectOpener)
+                            }
+                            .controlSize(.small)
+                        }
                     }
                 }
-            }.padding(.vertical, 5)
 
-            Section(header: Text(LocalizedStringKey("settings_data")).font(.headline)) {
-                HStack {
-                    Button(LocalizedStringKey("button_export_projects")) {
-                        exportProjects()
-                    }
-                    Button(LocalizedStringKey("button_import_projects")) {
-                        importProjects()
+                // 数据
+                section("settings_data") {
+                    card {
+                        HStack(spacing: 8) {
+                            Button(LocalizedStringKey("button_export_projects")) {
+                                exportProjects()
+                            }
+                            .controlSize(.small)
+                            Button(LocalizedStringKey("button_import_projects")) {
+                                importProjects()
+                            }
+                            .controlSize(.small)
+                            Spacer(minLength: 0)
+                        }
                     }
                 }
-            }.padding(.vertical, 5)
 
-            Section(header: Text(LocalizedStringKey("settings_about")).font(.headline)) {
-                Text(LocalizedStringKey("app_description_short"))
-                    .foregroundColor(.secondary)
-                Text(LocalizedStringKey("app_description_long"))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .foregroundColor(.secondary)
-            }.padding(.vertical, 5)
+                // 关于
+                section("settings_about") {
+                    card {
+                        HStack(spacing: 13) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                    .fill(LinearGradient(
+                                        colors: [
+                                            Color(red: 0.125, green: 0.149, blue: 0.227),
+                                            Color(red: 0.055, green: 0.067, blue: 0.098),
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ))
+                                Image(systemName: "rectangle.on.rectangle.angled")
+                                    .font(.system(size: 19, weight: .light))
+                                    .foregroundStyle(theme.accent)
+                            }
+                            .frame(width: 44, height: 44)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                    .strokeBorder(DS.line2, lineWidth: 1)
+                            )
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(verbatim: "QuickOpener \(appVersion)")
+                                    .font(.system(size: 12.5, weight: .semibold))
+                                    .foregroundStyle(DS.text)
+                                Text(LocalizedStringKey("app_description_short"))
+                                    .font(.system(size: 10.5))
+                                    .foregroundStyle(DS.text3)
+                                Text(LocalizedStringKey("app_description_long"))
+                                    .font(.system(size: 10.5))
+                                    .foregroundStyle(DS.text3)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
             }
-            .padding()
+            .padding(22)
         }
         .frame(width: 520, height: 700)
+        .background(
+            ZStack {
+                VisualEffectBackground(material: .hudWindow)
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.102, green: 0.122, blue: 0.165).opacity(0.93),
+                        Color(red: 0.043, green: 0.051, blue: 0.078).opacity(0.96),
+                        Color(red: 0.031, green: 0.039, blue: 0.059).opacity(0.98),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: DS.radius, style: .continuous))
+        .overlay(GlassBorder())
         .tint(theme.accent)
         .alert(LocalizedStringKey("restart_failed_title"), isPresented: $restartFailed) {
             Button(role: .cancel) {} label: { Text(verbatim: "OK") }
@@ -190,6 +273,45 @@ struct SettingsView: View {
         } message: { summary in
             Text(verbatim: summary)
         }
+    }
+
+    // MARK: - 布局组件
+
+    /// 分区标题：小号大写 + 一条渐隐分隔线。
+    private func section<Content: View>(_ titleKey: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 9) {
+                Text(LocalizedStringKey(titleKey))
+                    .font(.system(size: 10.5, weight: .semibold))
+                    .tracking(0.9)
+                    .foregroundStyle(DS.text3)
+                Rectangle()
+                    .fill(DS.line)
+                    .frame(height: 1)
+            }
+            content()
+        }
+    }
+
+    /// 卡片容器：淡色底 + 1px 描边 + 圆角。
+    private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .padding(.horizontal, 13)
+            .padding(.vertical, 11)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(DS.surface)
+            .clipShape(RoundedRectangle(cornerRadius: DS.cardRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: DS.cardRadius, style: .continuous)
+                    .strokeBorder(DS.line, lineWidth: 1)
+            )
+    }
+
+    /// 版本号从 Bundle 读取，避免硬编码与工程配置不同步。
+    private var appVersion: String {
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
+        return "\(v) (\(b))"
     }
 
     /// 读写系统登录项。失败时回滚开关状态并提示。

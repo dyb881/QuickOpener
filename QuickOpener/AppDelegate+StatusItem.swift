@@ -81,6 +81,14 @@ extension AppDelegate {
                 backing: .buffered,
                 defer: false
             )
+
+            // 与主窗口一致的深色玻璃外观
+            newWindow.isOpaque = false
+            newWindow.backgroundColor = .clear
+            newWindow.titlebarAppearsTransparent = true
+            newWindow.titleVisibility = .hidden
+            newWindow.styleMask.insert(.fullSizeContentView)
+            newWindow.appearance = NSAppearance(named: .darkAqua)
             let hostingController = NSHostingController(rootView:
                 SettingsView()
                     .modelContainer(QuickOpenerApp.sharedModelContainer)

@@ -74,3 +74,8 @@
 "theme_purple" = "퍼플";
 "theme_orange" = "오렌지";
 "theme_pink" = "핑크";
+
+/* 底栏快捷键提示 */
+"foot_select" = "선택";
+"foot_open" = "열기";
+"foot_close" = "닫기";

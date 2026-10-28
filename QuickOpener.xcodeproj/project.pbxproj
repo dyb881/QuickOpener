@@ -7,8 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		174B3C1430919B6300479B2F /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 1758F83F2E8927B700F4EE06 /* KeyboardShortcuts */; };
 		1758F8402E8927B700F4EE06 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 1758F83F2E8927B700F4EE06 /* KeyboardShortcuts */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AA11F8302E8913CF00F4EE10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1758F80D2E8913CF00F4EE06 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1758F8142E8913CF00F4EE06;
+			remoteInfo = QuickOpener;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1758F8152E8913CF00F4EE06 /* QuickOpener.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuickOpener.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -54,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				174B3C1430919B6300479B2F /* KeyboardShortcuts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,24 +91,6 @@
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
-
-/* Begin PBXContainerItemProxy section */
-		AA11F8302E8913CF00F4EE10 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1758F80D2E8913CF00F4EE06 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 1758F8142E8913CF00F4EE06;
-			remoteInfo = QuickOpener;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXTargetDependency section */
-		AA11F8312E8913CF00F4EE11 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 1758F8142E8913CF00F4EE06 /* QuickOpener */;
-			targetProxy = AA11F8302E8913CF00F4EE10 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXNativeTarget section */
 		1758F8142E8913CF00F4EE06 /* QuickOpener */ = {
@@ -156,12 +150,12 @@
 				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					1758F8142E8913CF00F4EE06 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
 					AA11F8142E8913CF00F4EE01 = {
 						CreatedOnToolsVersion = 26.0.1;
 						TestTargetID = 1758F8142E8913CF00F4EE06;
-					};
-					1758F8142E8913CF00F4EE06 = {
-						CreatedOnToolsVersion = 26.0.1;
 					};
 				};
 			};
@@ -228,6 +222,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA11F8312E8913CF00F4EE11 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1758F8142E8913CF00F4EE06 /* QuickOpener */;
+			targetProxy = AA11F8302E8913CF00F4EE10 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1758F8202E8913D000F4EE06 /* Debug */ = {

@@ -65,7 +65,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     var keyMonitor: Any?
 
     /// 标题栏快捷键提示标签（随快捷键设置更新）
-    var shortcutLabel: NSTextField?
+    /// 快捷键提示已改由 SwiftUI 标题栏渲染，无需原生标签。
 
     /// 快捷键变化通知的观察者
     var shortcutObserver: NSObjectProtocol?
@@ -146,6 +146,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
+
+        // 深色玻璃外观：透明窗口 + 隐藏标题栏，圆角与高光边由 SwiftUI 自绘
+        newWindow.isOpaque = false
+        newWindow.backgroundColor = .clear
+        newWindow.titlebarAppearsTransparent = true
+        newWindow.titleVisibility = .hidden
+        newWindow.styleMask.insert(.fullSizeContentView)
+        newWindow.appearance = NSAppearance(named: .darkAqua)
         let hostingController = NSHostingController(rootView:
             ContentView()
                 .modelContainer(QuickOpenerApp.sharedModelContainer)
@@ -165,20 +173,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         // 将窗口引用传递给 DataManager，用于 NSOpenPanel 的 Sheet 模态
         QuickOpenerApp.dataManager.hostingWindow = newWindow
-
-        let controller = NSTitlebarAccessoryViewController()
-        let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 90, height: 24)) // 容纳最长组合键提示
-        let textField = NSTextField(labelWithString: "")
-        textField.alignment = .center // 文本居中
-        textField.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
-        textField.textColor = .secondaryLabelColor
-        textField.frame = containerView.bounds // 使用 containerView 的边界
-        containerView.addSubview(textField)
-        controller.view = containerView
-        controller.layoutAttribute = .trailing
-        newWindow.addTitlebarAccessoryViewController(controller)
-        shortcutLabel = textField
-        updateShortcutLabel()
 
         // 先按鼠标位置定位，再激活显示，避免窗口先在屏幕角落闪一下
         newWindow.setFrameOrigin(targetOrigin(for: newWindow, mouse: NSEvent.mouseLocation))

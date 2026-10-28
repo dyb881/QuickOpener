@@ -72,3 +72,8 @@
 "theme_purple" = "Violett";
 "theme_orange" = "Orange";
 "theme_pink" = "Pink";
+
+/* 底栏快捷键提示 */
+"foot_select" = "Auswählen";
+"foot_open" = "Öffnen";
+"foot_close" = "Schließen";

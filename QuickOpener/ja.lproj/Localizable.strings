@@ -72,3 +72,8 @@
 "theme_purple" = "パープル";
 "theme_orange" = "オレンジ";
 "theme_pink" = "ピンク";
+
+/* 底栏快捷键提示 */
+"foot_select" = "選択";
+"foot_open" = "開く";
+"foot_close" = "閉じる";

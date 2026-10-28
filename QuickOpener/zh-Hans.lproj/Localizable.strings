@@ -72,3 +72,8 @@
 "theme_purple" = "紫色";
 "theme_orange" = "橙色";
 "theme_pink" = "粉色";
+
+/* 底栏快捷键提示 */
+"foot_select" = "选择";
+"foot_open" = "打开";
+"foot_close" = "关闭";

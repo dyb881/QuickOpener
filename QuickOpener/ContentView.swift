@@ -1,37 +1,49 @@
 //
 //  ContentView.swift
-//  QuickOpener
+//  ProjectOpener
 //
-//  Created by 邓耀彬 on 2025/9/28.
+//  Created by 邓耀彬 on 2025/9/26.
 //
 
 import AppKit
-import Combine
+import KeyboardShortcuts
 import SwiftData
 import SwiftUI
 
-/// 主视图，显示项目列表和应用程序选择控件，用于管理文件和打开方式。
+/// 主视图：搜索、项目列表与快捷键底栏（深色玻璃视觉）。
 struct ContentView: View {
-    /// 环境对象，引用 `DataManager` 来管理项目和应用程序数据。
     @EnvironmentObject private var dataManager: DataManager
-
-    /// 主题强调色，跟随设置里的选择即时变化。
     @EnvironmentObject private var theme: ThemeManager
 
-    /// 状态变量，跟踪当前鼠标悬停的项目路径。
     @State private var hoveredPath: String?
-
-    /// 搜索框焦点：窗口每次显示时自动聚焦，省掉「先用鼠标点输入框」这一步。
     @FocusState private var isFilterFocused: Bool
+    /// 快捷键变化时自增，驱动标题栏徽标重绘。
+    @State private var shortcutRevision = 0
 
-    /// 视图主体，包含头部控件和项目列表，设置固定窗口大小。
     var body: some View {
-        VStack {
-            headerControls
-                .padding([.horizontal, .top])
-            projectsList(selectedPath: dataManager.selectedProject?.path)
+        VStack(spacing: 0) {
+            titleBar
+            searchRow
+            listArea
+            footBar
         }
         .frame(width: 300, height: 500)
+        .background(
+            ZStack {
+                VisualEffectBackground(material: .hudWindow)
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.102, green: 0.122, blue: 0.165).opacity(0.93),
+                        Color(red: 0.043, green: 0.051, blue: 0.078).opacity(0.96),
+                        Color(red: 0.031, green: 0.039, blue: 0.059).opacity(0.98),
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: DS.radius, style: .continuous))
+        .overlay(GlassBorder())
         .tint(theme.accent)
         .alert(
             LocalizedStringKey("project_missing_title"),
@@ -46,132 +58,79 @@ struct ContentView: View {
             Text(verbatim: project.path)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
-            // 窗口每次获得焦点（首次显示或被复用后重新显示）都把光标放进搜索框
             isFilterFocused = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .init("KeyboardShortcuts_shortcutByNameDidChange"))) { _ in
+            shortcutRevision += 1
+        }
         .onChange(of: dataManager.filterText) { _, _ in
-            dataManager.selectedIndex = 0 // 过滤结果变了，选中项回到第一行
+            dataManager.selectedIndex = 0
         }
     }
 
-    /// 头部控件，包含过滤文本输入框和添加项目按钮。
-    private var headerControls: some View {
-        HStack {
-            TextField(LocalizedStringKey("filter_projects"), text: $dataManager.filterText) // 输入框，用于过滤项目列表
+    // MARK: - 标题栏
+
+    /// 自绘标题栏：左侧让出窗口红绿灯位置，右侧显示当前唤起快捷键。
+    private var titleBar: some View {
+        HStack(spacing: 0) {
+            Spacer(minLength: 78)
+            Text(currentShortcut)
+                .font(DS.mono(10))
+                .foregroundStyle(DS.text3)
+                .padding(.horizontal, 6)
+                .frame(height: 20)
+                .background(Color.white.opacity(0.03))
+                .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .strokeBorder(DS.line, lineWidth: 1)
+                )
+        }
+        .padding(.trailing, 10)
+        .frame(height: 38)
+    }
+
+    /// 当前全局快捷键文案，未设置时回退到默认值。
+    private var currentShortcut: String {
+        _ = shortcutRevision
+        return KeyboardShortcuts.getShortcut(for: .toggleProjectOpener)?.description ?? "⌥Z"
+    }
+
+    // MARK: - 搜索
+
+    private var searchRow: some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 7) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(theme.accent)
+                TextField(
+                    "",
+                    text: $dataManager.filterText,
+                    prompt: Text(LocalizedStringKey("filter_projects")).foregroundColor(DS.text2)
+                )
+                .textFieldStyle(.plain)
+                .font(.system(size: 12.5))
                 .focused($isFilterFocused)
-            addProjectButton // 添加项目和应用程序的菜单按钮
+            }
+            .padding(.horizontal, 9)
+            .frame(height: 28)
+            .background(theme.accent.opacity(0.045))
+            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .strokeBorder(theme.accent.opacity(0.34), lineWidth: 1)
+            )
+
+            addProjectButton
         }
+        .padding(.horizontal, 10)
+        .padding(.bottom, 10)
     }
 
-    /// 创建应用程序菜单项，显示应用程序图标和名称。
-    /// - Parameters:
-    ///   - app: 要显示的 `ApplicationModel` 实例。
-    ///   - action: 按钮点击时的操作。
-    /// - Returns: 包含图标和名称的菜单项视图。
-    private func appButton(_ app: ApplicationModel, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(nsImage: app.icon)
-            Text(app.name)
-        }
-    }
+    // MARK: - 列表
 
-    /// 添加项目 / 管理应用的菜单按钮。
-    ///
-    /// 不使用 `Menu` 的 `primaryAction`：macOS 上 primaryAction 会接管点击，
-    /// 展开菜单降级为点击右侧极窄的指示器，导致「切换应用 / 添加应用」几乎无法触达。
-    private var addProjectButton: some View {
-        Menu {
-            Button {
-                dataManager.addProjects() // 选择文件或文件夹添加到列表
-            } label: {
-                Label(LocalizedStringKey("add_projects"), systemImage: "plus.square.on.square")
-            }
-
-            Divider()
-
-            Text(LocalizedStringKey("menu_current_application")) // 当前使用的应用（仅展示）
-            Button {
-                // 当前应用，仅作状态展示
-            } label: {
-                Image(nsImage: dataManager.currentApplication.icon)
-                Text(dataManager.currentApplication.name)
-            }
-            .disabled(true)
-
-            if dataManager.applications.count >= 2 {
-                Text(LocalizedStringKey("menu_available_applications")) // 列出其他可用应用程序
-                ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.path) { app in
-                    appButton(app) {
-                        dataManager.selectApplication(app) // 选择其他应用程序
-                    }
-                }
-            }
-
-            Divider()
-
-            Button {
-                dataManager.addApplication() // 打开面板添加新应用程序
-            } label: {
-                Label(LocalizedStringKey("add_application"), systemImage: "app.badge.plus")
-            }
-
-            if dataManager.applications.contains(where: { $0.path != ApplicationModel.defaultApplicationPath }) {
-                Menu {
-                    ForEach(dataManager.applications.filter { $0.path != ApplicationModel.defaultApplicationPath }, id: \.path) { app in
-                        Button(role: .destructive) {
-                            dataManager.removeApplication(app) // 删除已添加的应用（内置 Finder 不可删）
-                        } label: {
-                            Image(nsImage: app.icon)
-                            Text(app.name)
-                        }
-                    }
-                } label: {
-                    Label(LocalizedStringKey("remove_application"), systemImage: "trash")
-                }
-            }
-        } label: {
-            Image(systemName: "plus") // 菜单按钮图标
-        }
-    }
-
-    /// 项目设置菜单，显示项目的默认应用程序并提供切换应用程序的选项。
-    /// - Parameter item: 关联的 `ProjectModel` 实例。
-    /// - Returns: 包含应用程序图标和操作菜单的视图。
-    private func projectSetting(_ item: ProjectModel) -> some View {
-        ZStack {
-            Menu {
-                Text(LocalizedStringKey("menu_current_application")) // 默认应用程序打开选项
-                Button(action: {
-                    item.open() // 使用默认应用程序打开项目
-                }) {
-                    Image(nsImage: item.applicationIcon)
-                    Text(item.applicationName)
-                }
-
-                if dataManager.applications.count >= 2 {
-                    Text(LocalizedStringKey("menu_available_applications")) // 其他可用应用程序
-                    ForEach(dataManager.applications.filter { $0.path != item.applicationPath }, id: \.path) { app in
-                        appButton(app) {
-                            item.open(app.path) // 使用指定应用程序打开项目
-                        }
-                    }
-                }
-            } label: {
-                Image(nsImage: item.applicationIcon) // 应用程序图标作为菜单触发器
-            }
-            .frame(width: 20, height: 20)
-            .clipped()
-            .cornerRadius(5)
-            Image(nsImage: item.applicationIcon) // 显示应用程序图标
-                .resizable()
-                .scaledToFit()
-                .frame(width: 24, height: 24)
-                .allowsHitTesting(false) // 禁用图标的点击交互
-        }
-    }
-
-    /// 项目列表视图，显示过滤后的项目，支持点击打开、悬停与键盘选中高亮。
-    private func projectsList(selectedPath: String?) -> some View {
+    private var listArea: some View {
         Group {
             if dataManager.renderProjects.isEmpty {
                 if dataManager.projects.isEmpty {
@@ -181,13 +140,18 @@ struct ContentView: View {
                 }
             } else {
                 ScrollViewReader { proxy in
-                    List(dataManager.renderProjects, id: \.path) { item in
-                        projectRow(item, selectedPath: selectedPath)
-                            .id(item.path)
+                    ScrollView {
+                        LazyVStack(spacing: 1) {
+                            ForEach(Array(dataManager.renderProjects.enumerated()), id: \.element.path) { index, item in
+                                projectRow(item, index: index)
+                                    .id(item.path)
+                            }
+                        }
+                        .padding(6)
                     }
-                    .onChange(of: selectedPath) { _, newPath in
-                        guard let newPath = newPath else { return }
-                        // anchor 为 nil：已可见时不滚动，只有超出可视区域才跟随
+                    .scrollIndicators(.automatic)
+                    .onChange(of: dataManager.selectedProject?.path) { _, newPath in
+                        guard let newPath else { return }
                         withAnimation(.easeInOut(duration: 0.1)) {
                             proxy.scrollTo(newPath)
                         }
@@ -195,82 +159,148 @@ struct ContentView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    /// 一条项目都没有时的引导。
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Image(systemName: "tray")
-                .font(.system(size: 30, weight: .light))
-                .foregroundStyle(.tertiary)
+                .font(.system(size: 26, weight: .light))
+                .foregroundStyle(DS.text3)
             Text(LocalizedStringKey("empty_state_title"))
-                .font(.headline)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(DS.text)
             Text(LocalizedStringKey("empty_state_hint"))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 11))
+                .foregroundStyle(DS.text3)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             Button {
                 dataManager.addProjects()
             } label: {
                 Label(LocalizedStringKey("add_projects"), systemImage: "plus")
+                    .font(.system(size: 12))
             }
+            .buttonStyle(.bordered)
             .controlSize(.small)
+            .padding(.top, 2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 24)
     }
 
-    /// 有项目但过滤无结果。
     private var noMatchState: some View {
         VStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 24, weight: .light))
-                .foregroundStyle(.tertiary)
+                .font(.system(size: 22, weight: .light))
+                .foregroundStyle(DS.text3)
             Text(LocalizedStringKey("no_match_hint"))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 11))
+                .foregroundStyle(DS.text3)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    /// 单行项目视图。
-    private func projectRow(_ item: ProjectModel, selectedPath: String?) -> some View {
-        let isActive = selectedPath == item.path || hoveredPath == item.path
-        return HStack(spacing: 8) {
-            projectSetting(item) // 项目设置菜单
-            Text(item.name) // 项目名称
-                .foregroundStyle(dataManager.missingPaths.contains(item.path) ? Color.secondary : Color.primary)
-            if dataManager.missingPaths.contains(item.path) {
-                Image(systemName: "exclamationmark.triangle.fill") // 文件已被移动或删除
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .help(Text(LocalizedStringKey("project_missing_title")))
+    // MARK: - 底栏
+
+    private var footBar: some View {
+        HStack(spacing: 12) {
+            footItem("↑↓", key: "foot_select")
+            footItem("↩", key: "foot_open")
+            footItem("esc", key: "foot_close")
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 30)
+        .background(Color.white.opacity(0.02))
+        .overlay(alignment: .top) {
+            Rectangle().fill(DS.line).frame(height: 1)
+        }
+    }
+
+    private func footItem(_ symbol: String, key: String) -> some View {
+        HStack(spacing: 4) {
+            Text(symbol).foregroundStyle(DS.text2)
+            Text(LocalizedStringKey(key))
+        }
+        .font(DS.mono(9.5))
+        .foregroundStyle(DS.text3)
+    }
+
+    // MARK: - 单行
+
+    /// 单行项目：应用图标菜单 + 名称 + 父目录 + 快捷键徽标 / 删除按钮。
+    private func projectRow(_ item: ProjectModel, index: Int) -> some View {
+        let isSelected = dataManager.selectedProject?.path == item.path
+        let isHovered = hoveredPath == item.path
+        let isMissing = dataManager.missingPaths.contains(item.path)
+
+        return HStack(spacing: 10) {
+            projectSetting(item)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(item.name)
+                    .font(.system(size: 13))
+                    .foregroundStyle(isSelected ? Color.white : (isMissing ? DS.text3 : DS.text))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Text(isMissing
+                     ? NSLocalizedString("project_missing_title", comment: "")
+                     : parentPath(item.path))
+                    .font(DS.mono(9.5))
+                    .foregroundStyle(isMissing ? DS.warn : DS.text3)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
             Spacer(minLength: 4)
-            // 用 Button 而不是 onTapGesture：避免与整行的打开手势竞争
-            Button {
-                dataManager.removeProjects(item) // 删除项目
-            } label: {
-                Image(systemName: "trash")
-                    .foregroundStyle(.secondary)
+
+            if isMissing {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 10))
+                    .foregroundStyle(DS.warn)
+                    .help(Text(LocalizedStringKey("project_missing_title")))
             }
-            .buttonStyle(.plain)
-            .opacity(isActive ? 1 : 0) // 只在悬停/选中时出现，降低误删
-            .allowsHitTesting(isActive)
-            .animation(.easeInOut(duration: 0.12), value: isActive)
+
+            if isHovered {
+                Button {
+                    dataManager.removeProjects(item)
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 11))
+                        .foregroundStyle(DS.text2)
+                }
+                .buttonStyle(.plain)
+            } else if isSelected, index < 9 {
+                KeyCap(text: "⌘\(index + 1)", tint: theme.accent)
+            }
         }
-        .contentShape(Rectangle()) // 确保整行可点击
+        .padding(.horizontal, 8)
+        .frame(height: 38)
+        .background(rowFill(selected: isSelected, hovered: isHovered))
+        .clipShape(RoundedRectangle(cornerRadius: DS.rowRadius, style: .continuous))
+        .overlay(alignment: .leading) {
+            if isSelected {
+                Capsule()
+                    .fill(theme.accent)
+                    .frame(width: 2, height: 20)
+                    .padding(.leading, 1)
+            }
+        }
+        .overlay {
+            if isSelected {
+                RoundedRectangle(cornerRadius: DS.rowRadius, style: .continuous)
+                    .strokeBorder(theme.accent.opacity(0.22), lineWidth: 1)
+            }
+        }
+        .contentShape(Rectangle())
         .onHover { hovering in
-            hoveredPath = hovering ? item.path : nil // 更新悬停状态
-            if hovering, let index = dataManager.renderProjects.firstIndex(where: { $0.path == item.path }) {
-                dataManager.selectedIndex = index // 鼠标悬停与键盘选中保持一致
+            hoveredPath = hovering ? item.path : nil
+            if hovering {
+                dataManager.selectedIndex = index
             }
         }
         .onTapGesture {
-            item.open() // 点击项目以默认应用程序打开
+            item.open()
         }
-        .listRowBackground(rowBackground(for: item, selectedPath: selectedPath))
         .contextMenu {
             Button {
                 NSWorkspace.shared.activateFileViewerSelecting([item.url])
@@ -287,7 +317,6 @@ struct ContentView: View {
 
             Divider()
 
-            // 子菜单里直接改这个项目的默认打开应用
             Picker(LocalizedStringKey("context_set_default_app"), selection: Binding(
                 get: { item.applicationPath },
                 set: { dataManager.setApplicationPath($0, for: item) }
@@ -308,14 +337,138 @@ struct ContentView: View {
     }
 
     /// 行背景：键盘选中 > 鼠标悬停 > 透明。
-    private func rowBackground(for item: ProjectModel, selectedPath: String?) -> Color {
-        if selectedPath == item.path {
-            return theme.accent.opacity(0.18)
+    @ViewBuilder
+    private func rowFill(selected: Bool, hovered: Bool) -> some View {
+        if selected {
+            LinearGradient(
+                colors: [theme.accent.opacity(0.16), theme.accent.opacity(0.015)],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        } else if hovered {
+            theme.accent.opacity(0.07)
+        } else {
+            Color.clear
         }
-        if hoveredPath == item.path {
-            return theme.accent.opacity(0.08)
+    }
+
+    /// 行内第二行显示的父目录，`~` 缩写。
+    private func parentPath(_ path: String) -> String {
+        ((path as NSString).deletingLastPathComponent as NSString).abbreviatingWithTildeInPath
+    }
+
+    // MARK: - 菜单
+
+    private func appButton(_ app: ApplicationModel, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(nsImage: app.icon)
+            Text(app.name)
         }
-        return Color.clear
+    }
+
+    /// 添加项目 / 管理应用的菜单按钮（不用 primaryAction，否则菜单难以展开）。
+    private var addProjectButton: some View {
+        Menu {
+            Button {
+                dataManager.addProjects()
+            } label: {
+                Label(LocalizedStringKey("add_projects"), systemImage: "plus.square.on.square")
+            }
+
+            Divider()
+
+            Text(LocalizedStringKey("menu_current_application"))
+            Button {
+            } label: {
+                Image(nsImage: dataManager.currentApplication.icon)
+                Text(dataManager.currentApplication.name)
+            }
+            .disabled(true)
+
+            if dataManager.applications.count >= 2 {
+                Text(LocalizedStringKey("menu_available_applications"))
+                ForEach(dataManager.applications.filter { $0.path != dataManager.currentApplication.path }, id: \.path) { app in
+                    appButton(app) {
+                        dataManager.selectApplication(app)
+                    }
+                }
+            }
+
+            Divider()
+
+            Button {
+                dataManager.addApplication()
+            } label: {
+                Label(LocalizedStringKey("add_application"), systemImage: "app.badge.plus")
+            }
+
+            if dataManager.applications.contains(where: { $0.path != ApplicationModel.defaultApplicationPath }) {
+                Menu {
+                    ForEach(dataManager.applications.filter { $0.path != ApplicationModel.defaultApplicationPath }, id: \.path) { app in
+                        Button(role: .destructive) {
+                            dataManager.removeApplication(app)
+                        } label: {
+                            Image(nsImage: app.icon)
+                            Text(app.name)
+                        }
+                    }
+                } label: {
+                    Label(LocalizedStringKey("remove_application"), systemImage: "trash")
+                }
+            }
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(DS.text2)
+                .frame(width: 28, height: 28)
+                .background(DS.surface2)
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .strokeBorder(DS.line, lineWidth: 1)
+                )
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .frame(width: 28, height: 28)
+        .help(Text(LocalizedStringKey("add_projects")))
+    }
+
+    /// 项目设置菜单：点击行首应用图标切换打开方式。
+    private func projectSetting(_ item: ProjectModel) -> some View {
+        ZStack {
+            Menu {
+                Text(LocalizedStringKey("menu_current_application"))
+                Button(action: {
+                    item.open()
+                }) {
+                    Image(nsImage: item.applicationIcon)
+                    Text(item.applicationName)
+                }
+
+                if dataManager.applications.count >= 2 {
+                    Text(LocalizedStringKey("menu_available_applications"))
+                    ForEach(dataManager.applications.filter { $0.path != item.applicationPath }, id: \.path) { app in
+                        appButton(app) {
+                            item.open(app.path)
+                        }
+                    }
+                }
+            } label: {
+                Image(nsImage: item.applicationIcon)
+            }
+            .frame(width: 22, height: 22)
+            .clipped()
+            .cornerRadius(DS.iconRadius)
+            Image(nsImage: item.applicationIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 24, height: 24)
+                .allowsHitTesting(false)
+        }
+        .frame(width: 24, height: 24)
+        .clipShape(RoundedRectangle(cornerRadius: DS.iconRadius, style: .continuous))
+        .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
     }
 }
 
@@ -324,4 +477,5 @@ struct ContentView: View {
         .modelContainer(QuickOpenerApp.sharedModelContainer)
         .environmentObject(QuickOpenerApp.dataManager)
         .environmentObject(ThemeManager.shared)
+        .preferredColorScheme(.dark)
 }

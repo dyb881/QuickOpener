@@ -23,12 +23,9 @@ extension AppDelegate {
         }
     }
 
-    /// 刷新标题栏上的快捷键提示，跟随设置里录制的结果。
+    /// 快捷键提示已由 SwiftUI 标题栏自行渲染（监听同一通知），这里保留空实现兼容调用点。
     @MainActor
-    func updateShortcutLabel() {
-        let shortcut = KeyboardShortcuts.getShortcut(for: .toggleProjectOpener)
-        shortcutLabel?.stringValue = shortcut?.description ?? ""
-    }
+    func updateShortcutLabel() {}
 
     /// 窗口内的键盘监听：ESC 隐藏、↑↓ 选择、回车打开选中项、⌘1~9 直选。
     func setupKeyMonitor() {
